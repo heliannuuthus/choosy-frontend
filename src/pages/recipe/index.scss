@@ -1,0 +1,565 @@
+// 变量定义
+$primary-color: #ff6b35;
+$primary-light: #fff0eb;
+$text-primary: #1a1a1a;
+$text-secondary: #666;
+$text-hint: #999;
+$border-color: #f0f0f0;
+$bg-color: #f5f5f5;
+$card-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+
+.recipe-page {
+  height: 100vh;
+  background: $bg-color;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+// 顶部搜索栏
+.header-section {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 24rpx;
+  background: #fff;
+
+  .search-wrapper {
+    flex: 1;
+  }
+}
+
+// 主内容区域 - 左右布局
+.main-content {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  min-height: 0; // 关键：允许 flex 子项收缩
+}
+
+// 左侧分类栏
+.category-sidebar {
+  width: 180rpx;
+  height: 100%;
+  background: #fff;
+  border-right: 1rpx solid $border-color;
+  flex-shrink: 0;
+
+  .category-item {
+    padding: 32rpx 20rpx;
+    text-align: center;
+    position: relative;
+    transition: all 0.2s ease;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 6rpx;
+      height: 0;
+      background: $primary-color;
+      border-radius: 0 3rpx 3rpx 0;
+      transition: height 0.2s ease;
+    }
+
+    &.active {
+      background: $primary-light;
+
+      &::before {
+        height: 48rpx;
+      }
+
+      .category-text {
+        color: $primary-color;
+        font-weight: 600;
+      }
+    }
+
+    &:active:not(.active) {
+      background: $bg-color;
+    }
+
+    .category-text {
+      font-size: 28rpx;
+      color: $text-secondary;
+      line-height: 1.4;
+      display: block;
+      word-break: break-all;
+    }
+  }
+}
+
+// 右侧菜谱列表
+.recipe-list {
+  flex: 1;
+  height: 100%;
+  padding: 0 16rpx;
+  box-sizing: border-box;
+}
+
+.recipe-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+  width: 100%;
+}
+
+// 菜谱卡片
+.recipe-card {
+  background: #fff;
+  border-radius: 16rpx;
+  overflow: hidden;
+  box-shadow: $card-shadow;
+  display: flex;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  transition: transform 0.2s ease;
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  // 图片区域
+  .card-image {
+    width: 160rpx;
+    height: 160rpx;
+    position: relative;
+    flex-shrink: 0;
+
+    .image-content {
+      width: 100%;
+      height: 100%;
+    }
+
+    .image-placeholder {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #f8f8f8 0%, #eee 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      .placeholder-emoji {
+        font-size: 60rpx;
+        opacity: 0.6;
+      }
+    }
+
+    // 难度标签
+    .difficulty-badge {
+      position: absolute;
+      top: 12rpx;
+      left: 12rpx;
+      padding: 4rpx 12rpx;
+      border-radius: 6rpx;
+      font-size: 20rpx;
+      color: #fff;
+      font-weight: 500;
+    }
+  }
+
+  // 信息区域
+  .card-info {
+    flex: 1;
+    padding: 12rpx;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    min-width: 0;
+    overflow: hidden;
+    position: relative;
+
+    .info-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-width: 0;
+      height: 100%;
+    }
+
+    .recipe-name {
+      font-size: 30rpx;
+      font-weight: 600;
+      color: $text-primary;
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      margin-bottom: 8rpx;
+    }
+
+    .recipe-desc {
+      font-size: 24rpx;
+      color: $text-hint;
+      line-height: 1.4;
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      margin-bottom: 12rpx;
+    }
+
+    .recipe-meta {
+      display: flex;
+      align-items: center;
+      gap: 16rpx;
+      margin-bottom: 12rpx;
+
+      .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 4rpx;
+
+        .meta-text {
+          font-size: 22rpx;
+          color: $text-hint;
+        }
+      }
+    }
+
+    .recipe-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8rpx;
+
+      .tag {
+        font-size: 20rpx;
+        color: $primary-color;
+        padding: 4rpx 12rpx;
+        background: $primary-light;
+        border-radius: 4rpx;
+
+        &.more {
+          background: $bg-color;
+          color: $text-hint;
+        }
+      }
+    }
+
+    // 添加到清单按钮 - 右下角
+    .add-to-list-btn {
+      width: 56rpx;
+      height: 56rpx;
+      background: $primary-color;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-left: 12rpx;
+      box-shadow: 0 4rpx 12rpx rgba($primary-color, 0.4);
+      transition: all 0.2s ease;
+
+      &.in-list {
+        background: #52c41a;
+        box-shadow: 0 4rpx 12rpx rgba(#52c41a, 0.4);
+      }
+
+      &:active {
+        transform: scale(0.9);
+      }
+    }
+  }
+}
+
+// 空状态
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120rpx 40rpx;
+
+  .empty-icon {
+    font-size: 100rpx;
+    margin-bottom: 24rpx;
+  }
+
+  .empty-text {
+    font-size: 28rpx;
+    color: $text-hint;
+  }
+}
+
+// 加载状态
+.loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 100rpx 40rpx;
+  min-height: 400rpx;
+}
+
+// 做饭清单浮层
+.cooking-list {
+  padding: 0 24rpx 24rpx;
+  min-height: 400rpx;
+
+  .cooking-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80rpx 0;
+
+    .cooking-empty-icon {
+      font-size: 80rpx;
+      margin-bottom: 24rpx;
+    }
+
+    .cooking-empty-text {
+      font-size: 30rpx;
+      color: $text-secondary;
+      margin-bottom: 16rpx;
+    }
+
+    .cooking-empty-hint {
+      font-size: 24rpx;
+      color: $text-hint;
+    }
+  }
+
+  .cooking-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16rpx 0 24rpx;
+    border-bottom: 1rpx solid $border-color;
+    margin-bottom: 16rpx;
+
+    .cooking-count {
+      font-size: 26rpx;
+      color: $text-secondary;
+    }
+
+    .clear-btn {
+      font-size: 26rpx;
+      color: #ff4d4f;
+      padding: 8rpx 16rpx;
+
+      &:active {
+        opacity: 0.7;
+      }
+    }
+  }
+
+  .cooking-scroll {
+    max-height: 600rpx;
+  }
+
+  .cooking-item {
+    display: flex;
+    align-items: center;
+    padding: 16rpx 0;
+    border-bottom: 1rpx solid $border-color;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:active {
+      background: $bg-color;
+    }
+
+    .cooking-item-image {
+      width: 100rpx;
+      height: 100rpx;
+      border-radius: 12rpx;
+      overflow: hidden;
+      flex-shrink: 0;
+      margin-right: 20rpx;
+
+      .cooking-image {
+        width: 100%;
+        height: 100%;
+      }
+
+      .cooking-image-placeholder {
+        width: 100%;
+        height: 100%;
+        background: $bg-color;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 40rpx;
+      }
+    }
+
+    .cooking-item-info {
+      flex: 1;
+      min-width: 0;
+
+      .cooking-item-name {
+        font-size: 28rpx;
+        font-weight: 500;
+        color: $text-primary;
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        margin-bottom: 8rpx;
+      }
+
+      .cooking-item-category {
+        font-size: 24rpx;
+        color: $text-hint;
+      }
+    }
+
+    .cooking-item-remove {
+      width: 60rpx;
+      height: 60rpx;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+
+      &:active {
+        opacity: 0.5;
+      }
+    }
+  }
+}
+
+// 悬浮购物车按钮
+.floating-cart-btn {
+  position: fixed;
+  right: 40rpx;
+  bottom: 40rpx;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12rpx;
+  animation: float-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  .cart-icon-wrapper {
+    width: 112rpx;
+    height: 112rpx;
+    background: linear-gradient(135deg, $primary-color 0%, #ff8f6b 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 
+      0 12rpx 32rpx rgba($primary-color, 0.45),
+      0 4rpx 12rpx rgba(0, 0, 0, 0.15);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+
+    // 添加光晕效果
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+      pointer-events: none;
+    }
+  }
+
+  .cart-label {
+    font-size: 22rpx;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 8rpx 20rpx;
+    border-radius: 24rpx;
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.2);
+    white-space: nowrap;
+    backdrop-filter: blur(10rpx);
+    font-weight: 500;
+    pointer-events: none;
+    animation: label-fade-in 0.3s ease forwards;
+  }
+
+  &:active {
+    .cart-icon-wrapper {
+      transform: scale(0.88);
+      box-shadow: 
+        0 6rpx 20rpx rgba($primary-color, 0.35),
+        0 2rpx 8rpx rgba(0, 0, 0, 0.12);
+    }
+  }
+
+  // 徽章样式覆盖
+  .at-badge {
+    .at-badge__num {
+      background: #ff4757;
+      font-size: 24rpx;
+      min-width: 40rpx;
+      height: 40rpx;
+      line-height: 40rpx;
+      padding: 0 12rpx;
+      border-radius: 20rpx;
+      top: -10rpx;
+      right: -10rpx;
+      box-shadow: 0 4rpx 12rpx rgba(#ff4757, 0.5);
+      font-weight: 600;
+      border: 3rpx solid #fff;
+    }
+  }
+
+  // 添加悬浮动画效果
+  @keyframes floating {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-8rpx);
+    }
+  }
+
+  .cart-icon-wrapper {
+    animation: floating 3s ease-in-out infinite;
+  }
+}
+
+@keyframes float-in {
+  0% {
+    opacity: 0;
+    transform: translateY(60rpx) scale(0.6);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes label-fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-10rpx);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// 覆盖 taro-ui 搜索栏样式
+.at-search-bar {
+  background: transparent !important;
+  padding: 0 !important;
+
+  .at-search-bar__input-cnt {
+    background: $bg-color !important;
+    border-radius: 40rpx !important;
+  }
+
+  .at-search-bar__action {
+    color: $primary-color !important;
+    font-weight: 500;
+  }
+}
+
+// 覆盖加载更多样式
+.at-load-more {
+  padding: 32rpx 0 !important;
+}
