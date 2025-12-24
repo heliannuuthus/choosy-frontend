@@ -7,17 +7,40 @@ export interface LocationInfo {
   longitude: number;
 }
 
+// 位置授权状态
+export type LocationAuthStatus = 'authorized' | 'denied' | 'not_determined';
+
+/**
+ * 检查位置授权状态
+ */
+export async function checkLocationAuth(): Promise<LocationAuthStatus> {
+  try {
+    const setting = await Taro.getSetting();
+    const auth = setting.authSetting['scope.userFuzzyLocation'];
+    if (auth === true) return 'authorized';
+    if (auth === false) return 'denied';
+    return 'not_determined';
+  } catch {
+    return 'not_determined';
+  }
+}
+
 /**
  * 获取模糊地理位置
  * 使用微信的 getFuzzyLocation API
  */
 export async function getFuzzyLocation(): Promise<LocationInfo | null> {
   try {
-    // 先检查授权状态
-    const setting = await Taro.getSetting();
+    const authStatus = await checkLocationAuth();
 
-    if (!setting.authSetting['scope.userFuzzyLocation']) {
-      // 请求授权
+    if (authStatus === 'denied') {
+      // 用户之前拒绝过，需要引导去设置页面
+      console.log('[Location] 用户之前拒绝过授权，需要打开设置');
+      return null;
+    }
+
+    if (authStatus === 'not_determined') {
+      // 从未授权过，请求授权
       try {
         await Taro.authorize({ scope: 'scope.userFuzzyLocation' });
       } catch (authErr) {
@@ -82,7 +105,7 @@ export interface ContextResponse {
 
 /**
  * 获取推荐上下文（位置、天气、时间）
- * 需要用户登录
+ * 只需传入经纬度，其他信息由后端返回
  */
 export async function getContext(
   location: LocationInfo
@@ -92,7 +115,6 @@ export async function getContext(
     body: JSON.stringify({
       latitude: location.latitude,
       longitude: location.longitude,
-      timestamp: Date.now(),
     }),
   });
 }
@@ -125,14 +147,102 @@ export function getSeasonName(season: string): string {
 }
 
 /**
- * 获取天气图标
+ * 天气主题配置
+ */
+export interface WeatherTheme {
+  icon: string;
+  gradient: string;
+  textColor: string;
+}
+
+/**
+ * 获取天气主题（图标 + 背景渐变 + 文字颜色）
+ */
+export function getWeatherTheme(weather: string): WeatherTheme {
+  // 晴天
+  if (weather.includes('晴')) {
+    return {
+      icon: '☀️',
+      gradient: 'linear-gradient(180deg, #56CCF2 0%, #2F80ED 100%)',
+      textColor: '#fff',
+    };
+  }
+  // 多云
+  if (weather.includes('多云')) {
+    return {
+      icon: '⛅',
+      gradient: 'linear-gradient(180deg, #a1c4fd 0%, #c2e9fb 100%)',
+      textColor: '#333',
+    };
+  }
+  // 阴天
+  if (weather.includes('阴') || weather.includes('云')) {
+    return {
+      icon: '☁️',
+      gradient: 'linear-gradient(180deg, #bdc3c7 0%, #2c3e50 100%)',
+      textColor: '#fff',
+    };
+  }
+  // 小雨
+  if (weather.includes('小雨') || weather.includes('阵雨')) {
+    return {
+      icon: '🌦️',
+      gradient:
+        'linear-gradient(180deg, #667db6 0%, #0082c8 50%, #667db6 100%)',
+      textColor: '#fff',
+    };
+  }
+  // 大雨/暴雨
+  if (weather.includes('雨')) {
+    return {
+      icon: '🌧️',
+      gradient: 'linear-gradient(180deg, #373B44 0%, #4286f4 100%)',
+      textColor: '#fff',
+    };
+  }
+  // 雷阵雨
+  if (weather.includes('雷')) {
+    return {
+      icon: '⛈️',
+      gradient: 'linear-gradient(180deg, #232526 0%, #414345 100%)',
+      textColor: '#fff',
+    };
+  }
+  // 雪
+  if (weather.includes('雪')) {
+    return {
+      icon: '❄️',
+      gradient: 'linear-gradient(180deg, #e6dada 0%, #274046 100%)',
+      textColor: '#fff',
+    };
+  }
+  // 雾/霾
+  if (weather.includes('雾') || weather.includes('霾')) {
+    return {
+      icon: '🌫️',
+      gradient: 'linear-gradient(180deg, #606c88 0%, #3f4c6b 100%)',
+      textColor: '#fff',
+    };
+  }
+  // 风
+  if (weather.includes('风')) {
+    return {
+      icon: '💨',
+      gradient: 'linear-gradient(180deg, #83a4d4 0%, #b6fbff 100%)',
+      textColor: '#333',
+    };
+  }
+  // 默认
+  return {
+    icon: '🌤️',
+    gradient: 'linear-gradient(180deg, #89f7fe 0%, #66a6ff 100%)',
+    textColor: '#fff',
+  };
+}
+
+/**
+ * 获取天气图标（兼容旧接口）
  */
 export function getWeatherIcon(weather: string): string {
-  if (weather.includes('晴')) return '☀️';
-  if (weather.includes('云') || weather.includes('阴')) return '☁️';
-  if (weather.includes('雨')) return '🌧️';
-  if (weather.includes('雪')) return '❄️';
-  if (weather.includes('雾') || weather.includes('霾')) return '🌫️';
-  if (weather.includes('风')) return '💨';
-  return '🌤️';
+  return getWeatherTheme(weather).icon;
 }

@@ -6,39 +6,6 @@
   padding-bottom: env(safe-area-inset-bottom);
 }
 
-// 页面头部
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 30rpx 40rpx 20rpx;
-  background: $bg-white;
-
-  .page-title {
-    font-size: 40rpx;
-    font-weight: bold;
-    color: $text-primary;
-  }
-
-  .refresh-btn {
-    width: 60rpx;
-    height: 60rpx;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: $primary-light;
-    border-radius: 50%;
-
-    &:active {
-      opacity: 0.8;
-    }
-
-    .rotating {
-      animation: rotate 1s linear infinite;
-    }
-  }
-}
-
 @keyframes rotate {
   from {
     transform: rotate(0deg);
@@ -369,109 +336,125 @@
   height: 40rpx;
 }
 
-// 上下文卡片
-.context-card {
-  margin: 20rpx;
-  padding: 30rpx;
-  background: $bg-white;
-  border-radius: 20rpx;
-  box-shadow: $card-shadow;
+// 天气卡片
+.weather-card {
+  margin: 24rpx;
+  padding: 32rpx;
+  border-radius: 32rpx;
+  position: relative;
+  overflow: hidden;
+  min-height: 480rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 16rpx 48rpx rgba(0, 0, 0, 0.15);
 
+  // 背景大图标
+  .bg-icon {
+    position: absolute;
+    right: -40rpx;
+    top: -20rpx;
+    font-size: 280rpx;
+    opacity: 0.2;
+    pointer-events: none;
+  }
+
+  // 顶部
   .card-header {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 12rpx;
-    margin-bottom: 20rpx;
+    position: relative;
+    z-index: 1;
 
-    .card-icon {
-      font-size: 36rpx;
+    .location {
+      font-size: 28rpx;
+      font-weight: 500;
+      opacity: 0.9;
     }
 
-    .card-title {
-      font-size: 30rpx;
-      font-weight: 600;
-      color: $text-primary;
+    .datetime {
+      font-size: 26rpx;
+      opacity: 0.8;
     }
   }
 
-  .card-content {
-    padding-left: 48rpx;
-  }
-
-  .location-text {
-    font-size: 32rpx;
-    color: $text-primary;
-    font-weight: 500;
-  }
-}
-
-// 天气卡片内容
-.weather-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
+  // 核心天气
   .weather-main {
     display: flex;
-    align-items: baseline;
-    gap: 16rpx;
+    flex-direction: column;
+    align-items: center;
+    padding: 40rpx 0;
+    position: relative;
+    z-index: 1;
 
-    .weather-temp {
-      font-size: 56rpx;
-      font-weight: 700;
-      color: $primary-color;
+    .temp-row {
+      display: flex;
+      align-items: flex-start;
+    }
+
+    .temp-value {
+      font-size: 180rpx;
+      font-weight: 200;
+      line-height: 1;
+      letter-spacing: -10rpx;
+      font-family:
+        -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+    }
+
+    .temp-unit {
+      font-size: 48rpx;
+      font-weight: 300;
+      margin-top: 24rpx;
+      margin-left: 8rpx;
+      opacity: 0.8;
     }
 
     .weather-desc {
-      font-size: 28rpx;
-      color: $text-secondary;
+      font-size: 36rpx;
+      font-weight: 500;
+      margin-top: 12rpx;
+      opacity: 0.9;
     }
   }
 
-  .weather-detail {
-    .detail-item {
+  // 底部信息
+  .card-footer {
+    display: flex;
+    justify-content: space-around;
+    position: relative;
+    z-index: 1;
+    padding-top: 24rpx;
+    border-top: 1rpx solid rgba(255, 255, 255, 0.2);
+
+    .info-item {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 4rpx;
+      gap: 8rpx;
 
-      .detail-label {
+      .info-label {
         font-size: 22rpx;
-        color: $text-hint;
+        opacity: 0.7;
       }
 
-      .detail-value {
+      .info-value {
         font-size: 28rpx;
-        color: $text-primary;
-        font-weight: 500;
+        font-weight: 600;
       }
     }
   }
 }
 
-// 时间标签
-.time-tags {
+// 下拉刷新提示
+.pull-hint {
   display: flex;
-  gap: 24rpx;
-  flex-wrap: wrap;
+  justify-content: center;
+  padding: 16rpx 0 8rpx;
 
-  .time-tag {
-    display: flex;
-    align-items: center;
-    gap: 8rpx;
-    padding: 12rpx 20rpx;
-    background: $primary-light;
-    border-radius: 30rpx;
-
-    .tag-icon {
-      font-size: 28rpx;
-    }
-
-    .tag-text {
-      font-size: 26rpx;
-      color: $text-primary;
-      font-weight: 500;
-    }
+  .hint-text {
+    font-size: 22rpx;
+    color: #ccc;
   }
 }
 

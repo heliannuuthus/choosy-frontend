@@ -1,22 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  Image,
-  RichText,
-  Swiper,
-  SwiperItem,
-} from '@tarojs/components';
+import { View, Text, ScrollView, Image, RichText } from '@tarojs/components';
 import Taro from '@tarojs/taro';
-import {
-  AtMessage,
-  AtTag,
-  AtRate,
-  AtTimeline,
-  AtFloatLayout,
-  AtIcon,
-} from 'taro-ui';
+import { AtMessage, AtRate, AtTimeline, AtFloatLayout } from 'taro-ui';
 import { getRecipeDetail, RecipeDetail } from '../../services/recipe';
 import { checkFavorite, toggleFavorite } from '../../services/favorite';
 import { isLoggedIn } from '../../services/user';
@@ -211,26 +196,13 @@ const RecipeDetailPage = () => {
     <View className="recipe-detail-page">
       <AtMessage />
       <ScrollView className="detail-scroll" scrollY>
-        {/* 菜谱轮播图 */}
-        {recipe.images && recipe.images.length > 0 ? (
-          <Swiper
-            className="recipe-swiper"
-            indicatorDots
-            indicatorColor="rgba(255,255,255,0.5)"
-            indicatorActiveColor="#fff"
-            autoplay
-            circular
-          >
-            {recipe.images.map((img, idx) => (
-              <SwiperItem key={idx}>
-                <Image
-                  src={img}
-                  className="recipe-swiper-image"
-                  mode="aspectFill"
-                />
-              </SwiperItem>
-            ))}
-          </Swiper>
+        {/* 菜谱图片 */}
+        {recipe.image_path ? (
+          <Image
+            src={recipe.image_path}
+            className="recipe-header-image"
+            mode="aspectFill"
+          />
         ) : (
           <View className="recipe-image-placeholder">
             <Text className="placeholder-icon">📷</Text>
