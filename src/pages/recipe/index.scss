@@ -274,8 +274,8 @@
     position: absolute;
     right: 12rpx;
     top: 12rpx;
-    width: 40rpx;
-    height: 40rpx;
+    width: 44rpx;
+    height: 44rpx;
     background: $primary-color;
     border-radius: 50%;
     display: flex;
@@ -284,12 +284,67 @@
     z-index: 10;
     transition: all 0.2s ease;
 
-    &.in-list {
-      background: #52c41a;
-    }
-
     &:active {
       transform: scale(0.9);
+    }
+  }
+
+  .card-stepper {
+    position: absolute;
+    right: 8rpx;
+    top: 8rpx;
+    display: flex;
+    align-items: center;
+    gap: 2rpx;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 24rpx;
+    padding: 4rpx;
+    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+    z-index: 10;
+
+    .stepper-btn {
+      width: 36rpx;
+      height: 36rpx;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+
+      &:active {
+        transform: scale(0.9);
+      }
+
+      &.minus {
+        background: $bg-color;
+
+        .stepper-btn-text {
+          color: $text-secondary;
+          font-size: 24rpx;
+        }
+      }
+
+      &.plus {
+        background: $primary-color;
+
+        .stepper-btn-text {
+          color: #fff;
+          font-size: 24rpx;
+        }
+      }
+    }
+
+    .stepper-btn-text {
+      font-weight: 400;
+      line-height: 1;
+    }
+
+    .stepper-num {
+      min-width: 32rpx;
+      text-align: center;
+      font-size: 24rpx;
+      font-weight: 600;
+      color: $text-primary;
     }
   }
 }

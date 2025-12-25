@@ -608,17 +608,51 @@ const Recipe = () => {
                         )}
                       </View>
                     </View>
-                    {/* 添加到清单按钮 - 独立区域 */}
-                    <View
-                      className={`add-to-list-btn ${inList ? 'in-list' : ''}`}
-                      onClick={() => handleAddClick(recipe)}
-                    >
-                      <AtIcon
-                        value={inList ? 'check' : 'add'}
-                        size="14"
-                        color="#fff"
-                      />
-                    </View>
+                    {/* 添加/调整份数 */}
+                    {inList ? (
+                      <View className="card-stepper">
+                        <View
+                          className="stepper-btn minus"
+                          onClick={e => {
+                            e.stopPropagation();
+                            const item = cookingList.find(
+                              i => i.id === recipe.id
+                            );
+                            if (item && item.servings <= 1) {
+                              removeFromList(recipe.id);
+                            } else {
+                              updateServings(recipe.id, -1);
+                            }
+                          }}
+                        >
+                          <Text className="stepper-btn-text">
+                            {cookingList.find(i => i.id === recipe.id)
+                              ?.servings === 1
+                              ? '×'
+                              : '−'}
+                          </Text>
+                        </View>
+                        <Text className="stepper-num">
+                          {cookingList.find(i => i.id === recipe.id)?.servings}
+                        </Text>
+                        <View
+                          className="stepper-btn plus"
+                          onClick={e => {
+                            e.stopPropagation();
+                            updateServings(recipe.id, 1);
+                          }}
+                        >
+                          <Text className="stepper-btn-text">+</Text>
+                        </View>
+                      </View>
+                    ) : (
+                      <View
+                        className="add-to-list-btn"
+                        onClick={() => handleAddClick(recipe)}
+                      >
+                        <AtIcon value="add" size="14" color="#fff" />
+                      </View>
+                    )}
                   </View>
                 );
               })}
