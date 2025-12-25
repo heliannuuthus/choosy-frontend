@@ -1,0 +1,225 @@
+@use '../../styles/variables' as *;
+
+.shopping-page {
+  min-height: 100vh;
+  background: $bg-color;
+}
+
+.loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 40rpx;
+
+  .empty-icon {
+    font-size: 100rpx;
+    margin-bottom: 24rpx;
+  }
+
+  .empty-text {
+    font-size: 32rpx;
+    color: $text-secondary;
+    margin-bottom: 12rpx;
+  }
+
+  .empty-hint {
+    font-size: 26rpx;
+    color: $text-hint;
+    margin-bottom: 40rpx;
+  }
+
+  .back-btn {
+    padding: 20rpx 60rpx;
+    background: $primary-color;
+    border-radius: 40rpx;
+
+    &:active {
+      opacity: 0.8;
+    }
+  }
+
+  .back-btn-text {
+    font-size: 28rpx;
+    color: #fff;
+  }
+}
+
+.shopping-header {
+  padding: 32rpx;
+  background: $bg-white;
+  border-bottom: 1rpx solid $border-color;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.header-info {
+  .header-title {
+    font-size: 36rpx;
+    font-weight: 600;
+    color: $text-primary;
+    display: block;
+    margin-bottom: 8rpx;
+  }
+
+  .header-subtitle {
+    font-size: 24rpx;
+    color: $text-hint;
+  }
+}
+
+.header-stats {
+  .stats-text {
+    font-size: 24rpx;
+    color: $primary-color;
+    background: $primary-light;
+    padding: 8rpx 16rpx;
+    border-radius: 16rpx;
+  }
+}
+
+.shopping-scroll {
+  height: calc(100vh - 120rpx);
+}
+
+.ingredients-list {
+  padding: 24rpx;
+}
+
+.ingredient-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 20rpx;
+  padding: 24rpx;
+  background: $bg-white;
+  border-radius: 16rpx;
+  margin-bottom: 16rpx;
+  box-shadow: $card-shadow;
+  transition: all 0.2s ease;
+
+  &:active {
+    transform: scale(0.99);
+  }
+
+  &.checked {
+    opacity: 0.6;
+
+    .ingredient-name {
+      text-decoration: line-through;
+      color: $text-hint;
+    }
+  }
+}
+
+.check-box {
+  width: 44rpx;
+  height: 44rpx;
+  border-radius: 50%;
+  border: 3rpx solid $border-color;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+  margin-top: 4rpx;
+
+  &.checked {
+    background: #52c41a;
+    border-color: #52c41a;
+  }
+}
+
+.ingredient-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.ingredient-name {
+  font-size: 30rpx;
+  font-weight: 500;
+  color: $text-primary;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.ingredient-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8rpx 16rpx;
+}
+
+.detail-item {
+  font-size: 24rpx;
+  color: $text-secondary;
+
+  .detail-recipe {
+    color: $text-hint;
+    font-size: 22rpx;
+  }
+}
+
+.recipes-section {
+  padding: 24rpx;
+  margin-top: 16rpx;
+}
+
+.section-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: $text-primary;
+  display: block;
+  margin-bottom: 20rpx;
+}
+
+.recipes-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.recipe-item {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 16rpx;
+  background: $bg-white;
+  border-radius: 12rpx;
+  box-shadow: $card-shadow;
+
+  .recipe-image {
+    width: 80rpx;
+    height: 80rpx;
+    border-radius: 8rpx;
+    flex-shrink: 0;
+  }
+
+  .recipe-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4rpx;
+  }
+
+  .recipe-name {
+    font-size: 26rpx;
+    font-weight: 500;
+    color: $text-primary;
+  }
+
+  .recipe-servings {
+    font-size: 22rpx;
+    color: $primary-color;
+  }
+}
+
+.bottom-spacer {
+  height: 60rpx;
+}

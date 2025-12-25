@@ -13,7 +13,7 @@ import {
   UserInfo,
 } from '../../services/user';
 import footprintIcon from '../../assets/icons/footprint.svg';
-import checklistIcon from '../../assets/icons/checklist.svg';
+import cartIcon from '../../assets/icons/cart.svg';
 import starFilledIcon from '../../assets/icons/star-filled.svg';
 import './index.scss';
 
@@ -314,10 +314,10 @@ const Profile = () => {
             </View>
             <View
               className="action-item"
-              onClick={() => Taro.switchTab({ url: '/pages/recipe/index' })}
+              onClick={() => Taro.navigateTo({ url: '/pages/recipe/shopping' })}
             >
               <View className="action-icon">
-                <Image src={checklistIcon} className="custom-icon" />
+                <Image src={cartIcon} className="custom-icon" />
                 {stats.cookingList > 0 && (
                   <View className="action-badge">
                     <Text className="badge-text">
@@ -326,7 +326,7 @@ const Profile = () => {
                   </View>
                 )}
               </View>
-              <Text className="action-label">菜单</Text>
+              <Text className="action-label">购物清单</Text>
             </View>
           </View>
         </View>

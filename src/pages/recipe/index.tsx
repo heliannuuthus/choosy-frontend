@@ -35,6 +35,7 @@ interface CookingListItem {
     flavors: string[];
     scenes: string[];
   };
+  servings: number;
   addedAt: number;
 }
 
@@ -85,6 +86,11 @@ const Recipe = () => {
   const [cookingList, setCookingList] = useState<CookingListItem[]>([]);
   const [showCookingList, setShowCookingList] = useState(false);
   const [scrollHeight, setScrollHeight] = useState<number>(0);
+  const [showServingsModal, setShowServingsModal] = useState(false);
+  const [selectedRecipe, setSelectedRecipe] = useState<RecipeListItem | null>(
+    null
+  );
+  const [selectedServings, setSelectedServings] = useState(1);
   const pageSize = 20;
 
   // 使用 ref 保存最新的 searchValue
@@ -297,33 +303,64 @@ const Recipe = () => {
     return name.replace(/的做法$/, '');
   }, []);
 
-  // 添加到今日菜单
-  const addToCookingList = useCallback(
+  // 点击添加按钮，打开份数选择
+  const handleAddClick = useCallback(
     (recipe: RecipeListItem) => {
-      const isInList = cookingList.some(item => item.id === recipe.id);
-
-      if (isInList) {
-        // 已在菜单中，移除
-        const newList = cookingList.filter(item => item.id !== recipe.id);
-        setCookingList(newList);
-        saveCookingList(newList);
+      const existingItem = cookingList.find(item => item.id === recipe.id);
+      if (existingItem) {
+        setSelectedServings(existingItem.servings);
       } else {
-        // 添加到菜单
-        const newItem: CookingListItem = {
-          id: recipe.id,
-          name: formatRecipeName(recipe.name),
-          description: recipe.description,
-          image_path: recipe.image_path,
-          category: recipe.category,
-          tags: recipe.tags,
-          addedAt: Date.now(),
-        };
-        const newList = [...cookingList, newItem];
-        setCookingList(newList);
-        saveCookingList(newList);
+        setSelectedServings(1);
       }
+      setSelectedRecipe(recipe);
+      setShowServingsModal(true);
     },
-    [cookingList, formatRecipeName]
+    [cookingList]
+  );
+
+  // 确认添加到菜单
+  const confirmAddToList = useCallback(() => {
+    if (!selectedRecipe) return;
+
+    const existingIndex = cookingList.findIndex(
+      item => item.id === selectedRecipe.id
+    );
+
+    if (existingIndex >= 0) {
+      // 更新份数
+      const newList = [...cookingList];
+      newList[existingIndex].servings = selectedServings;
+      setCookingList(newList);
+      saveCookingList(newList);
+    } else {
+      // 新增
+      const newItem: CookingListItem = {
+        id: selectedRecipe.id,
+        name: formatRecipeName(selectedRecipe.name),
+        description: selectedRecipe.description,
+        image_path: selectedRecipe.image_path,
+        category: selectedRecipe.category,
+        tags: selectedRecipe.tags,
+        servings: selectedServings,
+        addedAt: Date.now(),
+      };
+      const newList = [...cookingList, newItem];
+      setCookingList(newList);
+      saveCookingList(newList);
+    }
+
+    setShowServingsModal(false);
+    setSelectedRecipe(null);
+  }, [selectedRecipe, selectedServings, cookingList, formatRecipeName]);
+
+  // 从菜单移除
+  const removeFromList = useCallback(
+    (recipeId: string) => {
+      const newList = cookingList.filter(item => item.id !== recipeId);
+      setCookingList(newList);
+      saveCookingList(newList);
+    },
+    [cookingList]
   );
 
   // 清空今日菜单
@@ -558,7 +595,7 @@ const Recipe = () => {
                     {/* 添加到清单按钮 - 独立区域 */}
                     <View
                       className={`add-to-list-btn ${inList ? 'in-list' : ''}`}
-                      onClick={() => addToCookingList(recipe)}
+                      onClick={() => handleAddClick(recipe)}
                     >
                       <AtIcon
                         value={inList ? 'check' : 'add'}
@@ -637,52 +674,123 @@ const Recipe = () => {
               </Text>
             </View>
           ) : (
-            <ScrollView className="cooking-scroll" scrollY>
-              {cookingList.map(item => (
-                <View
-                  key={item.id}
-                  className="cooking-item"
-                  onClick={() => {
-                    setShowCookingList(false);
-                    navigateToDetail(item.id);
-                  }}
-                >
-                  <View className="cooking-item-image">
-                    {item.image_path ? (
-                      <Image
-                        src={item.image_path}
-                        className="cooking-image"
-                        mode="aspectFill"
-                      />
-                    ) : (
-                      <View className="cooking-image-placeholder">🍽️</View>
-                    )}
-                  </View>
-                  <View className="cooking-item-info">
-                    <Text className="cooking-item-name">{item.name}</Text>
-                    {item.description && (
-                      <Text className="cooking-item-desc">
-                        {item.description}
-                      </Text>
-                    )}
-                    {item.tags && flattenTags(item.tags).length > 0 && (
-                      <View className="cooking-item-tags">
-                        {flattenTags(item.tags)
-                          .slice(0, 3)
-                          .map((tag, idx) => (
-                            <Text key={idx} className="cooking-item-tag">
-                              {tag}
-                            </Text>
-                          ))}
+            <>
+              <ScrollView className="cooking-scroll" scrollY>
+                {cookingList.map(item => (
+                  <View
+                    key={item.id}
+                    className="cooking-item"
+                    onClick={() => {
+                      setShowCookingList(false);
+                      navigateToDetail(item.id);
+                    }}
+                  >
+                    <View className="cooking-item-image">
+                      {item.image_path ? (
+                        <Image
+                          src={item.image_path}
+                          className="cooking-image"
+                          mode="aspectFill"
+                        />
+                      ) : (
+                        <View className="cooking-image-placeholder">🍽️</View>
+                      )}
+                    </View>
+                    <View className="cooking-item-info">
+                      <View className="cooking-item-name-row">
+                        <Text className="cooking-item-name">{item.name}</Text>
+                        <Text className="cooking-item-servings">
+                          {item.servings}人份
+                        </Text>
                       </View>
-                    )}
+                      {item.tags && flattenTags(item.tags).length > 0 && (
+                        <View className="cooking-item-tags">
+                          {flattenTags(item.tags)
+                            .slice(0, 3)
+                            .map((tag, idx) => (
+                              <Text key={idx} className="cooking-item-tag">
+                                {tag}
+                              </Text>
+                            ))}
+                        </View>
+                      )}
+                    </View>
                   </View>
-                </View>
-              ))}
-            </ScrollView>
+                ))}
+              </ScrollView>
+              <View
+                className="generate-shopping-btn"
+                onClick={() => {
+                  setShowCookingList(false);
+                  Taro.navigateTo({ url: '/pages/recipe/shopping' });
+                }}
+              >
+                <Text className="generate-shopping-text">🛒 生成购物清单</Text>
+              </View>
+            </>
           )}
         </View>
       </AtFloatLayout>
+
+      {/* 份数选择弹窗 */}
+      {showServingsModal && selectedRecipe && (
+        <View
+          className="servings-modal-mask"
+          onClick={() => setShowServingsModal(false)}
+        >
+          <View className="servings-modal" onClick={e => e.stopPropagation()}>
+            <View className="servings-modal-header">
+              <Text className="servings-modal-title">
+                {formatRecipeName(selectedRecipe.name)}
+              </Text>
+            </View>
+            <View className="servings-modal-body">
+              <Text className="servings-hint">选择份数</Text>
+              <View className="servings-selector">
+                <View
+                  className={`servings-btn ${selectedServings <= 1 ? 'disabled' : ''}`}
+                  onClick={() =>
+                    selectedServings > 1 && setSelectedServings(s => s - 1)
+                  }
+                >
+                  <Text className="servings-btn-text">−</Text>
+                </View>
+                <View className="servings-value">
+                  <Text className="servings-num">{selectedServings}</Text>
+                  <Text className="servings-unit">人份</Text>
+                </View>
+                <View
+                  className="servings-btn"
+                  onClick={() => setSelectedServings(s => s + 1)}
+                >
+                  <Text className="servings-btn-text">+</Text>
+                </View>
+              </View>
+            </View>
+            <View className="servings-modal-footer">
+              {isInCookingList(selectedRecipe.id) && (
+                <View
+                  className="servings-modal-btn remove"
+                  onClick={() => {
+                    removeFromList(selectedRecipe.id);
+                    setShowServingsModal(false);
+                  }}
+                >
+                  <Text>移除</Text>
+                </View>
+              )}
+              <View
+                className="servings-modal-btn confirm"
+                onClick={confirmAddToList}
+              >
+                <Text>
+                  {isInCookingList(selectedRecipe.id) ? '更新' : '添加到菜单'}
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      )}
     </View>
   );
 };

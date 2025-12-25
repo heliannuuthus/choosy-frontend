@@ -51,7 +51,7 @@ const PermissionRequest = ({
 
   return (
     <View className="permission-container">
-      <View className="permission-icon">📍</View>
+      <View className="permission-icon">🧭</View>
       <Text className="permission-title">需要获取位置信息</Text>
       <Text className="permission-desc">
         为了给您推荐适合当前天气和时间的菜品，
@@ -261,7 +261,7 @@ const Recommend = () => {
           {/* 顶部：位置 + 时间 */}
           <View className="card-header">
             <Text className="location">
-              📍 {context.location?.city || '未知位置'}
+              🧭 {context.location?.city || '未知位置'}
               {context.location?.district && ` · ${context.location.district}`}
             </Text>
             {context.time && (
