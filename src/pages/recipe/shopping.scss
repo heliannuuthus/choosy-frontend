@@ -54,21 +54,21 @@
 }
 
 .shopping-header {
-  padding: 32rpx;
+  padding: 24rpx 32rpx;
   background: $bg-white;
-  border-bottom: 1rpx solid $border-color;
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
 }
 
 .header-info {
   .header-title {
     font-size: 36rpx;
-    font-weight: 600;
+    font-weight: 700;
     color: $text-primary;
     display: block;
-    margin-bottom: 8rpx;
+    margin-bottom: 4rpx;
   }
 
   .header-subtitle {
@@ -79,62 +79,121 @@
 
 .header-stats {
   .stats-text {
-    font-size: 24rpx;
-    color: $primary-color;
-    background: $primary-light;
+    font-size: 22rpx;
+    color: $text-secondary;
+    background: $bg-color;
     padding: 8rpx 16rpx;
     border-radius: 16rpx;
   }
 }
 
 .shopping-scroll {
-  height: calc(100vh - 120rpx);
+  height: calc(100vh - 100rpx);
+}
+
+// 食材区块
+.ingredients-section {
+  margin: 20rpx;
+  background: $bg-white;
+  border-radius: 20rpx;
+  overflow: hidden;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+
+  &.checked-section {
+    background: #fafafa;
+
+    .ingredient-item {
+      background: transparent;
+    }
+  }
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 24rpx 28rpx 16rpx;
+  border-bottom: 1rpx solid $border-color;
+}
+
+.section-label {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: $text-primary;
+}
+
+.section-count {
+  font-size: 24rpx;
+  color: $text-hint;
+  background: $bg-color;
+  padding: 4rpx 14rpx;
+  border-radius: 16rpx;
 }
 
 .ingredients-list {
-  padding: 24rpx;
+  padding: 8rpx 0;
 }
 
 .ingredient-item {
   display: flex;
   align-items: flex-start;
   gap: 20rpx;
-  padding: 24rpx;
-  background: $bg-white;
-  border-radius: 16rpx;
-  margin-bottom: 16rpx;
-  box-shadow: $card-shadow;
-  transition: all 0.2s ease;
+  padding: 20rpx 28rpx;
+  transition: all 0.25s ease;
+  animation: fadeSlideIn 0.3s ease;
 
   &:active {
-    transform: scale(0.99);
+    background: $bg-color;
   }
 
   &.checked {
-    opacity: 0.6;
-
     .ingredient-name {
       text-decoration: line-through;
       color: $text-hint;
     }
+
+    .ingredient-details {
+      opacity: 0.5;
+    }
+  }
+}
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
 .check-box {
-  width: 44rpx;
-  height: 44rpx;
+  width: 40rpx;
+  height: 40rpx;
   border-radius: 50%;
   border: 3rpx solid $border-color;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: all 0.2s ease;
   margin-top: 4rpx;
+  transition: all 0.2s ease;
+  background: $bg-white;
+
+  .check-inner {
+    width: 16rpx;
+    height: 16rpx;
+    border-radius: 50%;
+    background: transparent;
+    transition: all 0.2s ease;
+  }
 
   &.checked {
     background: #52c41a;
     border-color: #52c41a;
+    transform: scale(1.05);
   }
 }
 
@@ -148,13 +207,15 @@
   font-weight: 500;
   color: $text-primary;
   display: block;
-  margin-bottom: 8rpx;
+  margin-bottom: 6rpx;
+  transition: all 0.2s ease;
 }
 
 .ingredient-details {
   display: flex;
   flex-wrap: wrap;
-  gap: 8rpx 16rpx;
+  gap: 6rpx 16rpx;
+  transition: opacity 0.2s ease;
 }
 
 .detail-item {
@@ -167,20 +228,17 @@
   }
 }
 
+// 菜品区块
 .recipes-section {
-  padding: 24rpx;
-  margin-top: 16rpx;
-}
-
-.section-title {
-  font-size: 30rpx;
-  font-weight: 600;
-  color: $text-primary;
-  display: block;
-  margin-bottom: 20rpx;
+  margin: 20rpx;
+  background: $bg-white;
+  border-radius: 20rpx;
+  overflow: hidden;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
 }
 
 .recipes-list {
+  padding: 16rpx 20rpx;
   display: flex;
   flex-wrap: wrap;
   gap: 16rpx;
@@ -189,33 +247,52 @@
 .recipe-item {
   display: flex;
   align-items: center;
-  gap: 16rpx;
-  padding: 16rpx;
-  background: $bg-white;
+  gap: 12rpx;
+  padding: 12rpx 16rpx 12rpx 12rpx;
+  background: $bg-color;
   border-radius: 12rpx;
-  box-shadow: $card-shadow;
+  transition: all 0.2s ease;
+
+  &:active {
+    transform: scale(0.98);
+  }
 
   .recipe-image {
-    width: 80rpx;
-    height: 80rpx;
+    width: 56rpx;
+    height: 56rpx;
     border-radius: 8rpx;
     flex-shrink: 0;
+  }
+
+  .recipe-image-placeholder {
+    width: 56rpx;
+    height: 56rpx;
+    border-radius: 8rpx;
+    background: $border-color;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28rpx;
   }
 
   .recipe-info {
     display: flex;
     flex-direction: column;
-    gap: 4rpx;
+    gap: 2rpx;
   }
 
   .recipe-name {
-    font-size: 26rpx;
+    font-size: 24rpx;
     font-weight: 500;
     color: $text-primary;
+    max-width: 160rpx;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .recipe-servings {
-    font-size: 22rpx;
+    font-size: 20rpx;
     color: $primary-color;
   }
 }

@@ -122,11 +122,22 @@ const ShoppingPage = () => {
     });
   }, []);
 
-  const uncheckedCount = useMemo(() => {
-    return mergedIngredients.filter(ing => !checkedItems.has(ing.name)).length;
+  // 分离未勾选和已勾选的食材
+  const { uncheckedIngredients, checkedIngredients } = useMemo(() => {
+    const unchecked: typeof mergedIngredients = [];
+    const checked: typeof mergedIngredients = [];
+    mergedIngredients.forEach(ing => {
+      if (checkedItems.has(ing.name)) {
+        checked.push(ing);
+      } else {
+        unchecked.push(ing);
+      }
+    });
+    return { uncheckedIngredients: unchecked, checkedIngredients: checked };
   }, [mergedIngredients, checkedItems]);
 
-  const checkedCount = checkedItems.size;
+  const uncheckedCount = uncheckedIngredients.length;
+  const checkedCount = checkedIngredients.length;
 
   if (loading) {
     return (
@@ -170,48 +181,92 @@ const ShoppingPage = () => {
       </View>
 
       <ScrollView className="shopping-scroll" scrollY>
-        <View className="ingredients-list">
-          {mergedIngredients.map(ing => (
-            <View
-              key={ing.name}
-              className={`ingredient-item ${checkedItems.has(ing.name) ? 'checked' : ''}`}
-              onClick={() => toggleCheck(ing.name)}
-            >
-              <View
-                className={`check-box ${checkedItems.has(ing.name) ? 'checked' : ''}`}
-              >
-                {checkedItems.has(ing.name) && (
-                  <AtIcon value="check" size="14" color="#fff" />
-                )}
-              </View>
-              <View className="ingredient-content">
-                <Text className="ingredient-name">{ing.name}</Text>
-                <View className="ingredient-details">
-                  {ing.items.map((item, idx) => (
-                    <Text key={idx} className="detail-item">
-                      {item.quantity}
-                      <Text className="detail-recipe">
-                        （{item.recipeName}）
-                      </Text>
-                    </Text>
-                  ))}
-                </View>
-              </View>
+        {/* 待购食材 */}
+        {uncheckedIngredients.length > 0 && (
+          <View className="ingredients-section">
+            <View className="section-header">
+              <Text className="section-label">🛒 待购</Text>
+              <Text className="section-count">{uncheckedCount}</Text>
             </View>
-          ))}
-        </View>
+            <View className="ingredients-list">
+              {uncheckedIngredients.map(ing => (
+                <View
+                  key={ing.name}
+                  className="ingredient-item"
+                  onClick={() => toggleCheck(ing.name)}
+                >
+                  <View className="check-box">
+                    <View className="check-inner" />
+                  </View>
+                  <View className="ingredient-content">
+                    <Text className="ingredient-name">{ing.name}</Text>
+                    <View className="ingredient-details">
+                      {ing.items.map((item, idx) => (
+                        <Text key={idx} className="detail-item">
+                          {item.quantity}
+                          <Text className="detail-recipe">
+                            （{item.recipeName}）
+                          </Text>
+                        </Text>
+                      ))}
+                    </View>
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
 
+        {/* 已购食材 */}
+        {checkedIngredients.length > 0 && (
+          <View className="ingredients-section checked-section">
+            <View className="section-header">
+              <Text className="section-label">✅ 已购</Text>
+              <Text className="section-count">{checkedCount}</Text>
+            </View>
+            <View className="ingredients-list">
+              {checkedIngredients.map(ing => (
+                <View
+                  key={ing.name}
+                  className="ingredient-item checked"
+                  onClick={() => toggleCheck(ing.name)}
+                >
+                  <View className="check-box checked">
+                    <AtIcon value="check" size="12" color="#fff" />
+                  </View>
+                  <View className="ingredient-content">
+                    <Text className="ingredient-name">{ing.name}</Text>
+                    <View className="ingredient-details">
+                      {ing.items.map((item, idx) => (
+                        <Text key={idx} className="detail-item">
+                          {item.quantity}
+                        </Text>
+                      ))}
+                    </View>
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* 菜品清单 */}
         <View className="recipes-section">
-          <Text className="section-title">📋 菜品清单</Text>
+          <View className="section-header">
+            <Text className="section-label">📋 菜品</Text>
+            <Text className="section-count">{recipes.length}</Text>
+          </View>
           <View className="recipes-list">
             {recipes.map(({ detail, servings }) => (
               <View key={detail.id} className="recipe-item">
-                {detail.image_path && (
+                {detail.image_path ? (
                   <Image
                     src={detail.image_path}
                     className="recipe-image"
                     mode="aspectFill"
                   />
+                ) : (
+                  <View className="recipe-image-placeholder">🍽️</View>
                 )}
                 <View className="recipe-info">
                   <Text className="recipe-name">

@@ -571,12 +571,15 @@
   .cooking-item-stepper {
     display: flex;
     align-items: center;
-    gap: 4rpx;
+    gap: 2rpx;
     flex-shrink: 0;
+    background: $bg-color;
+    border-radius: 24rpx;
+    padding: 4rpx;
 
     .stepper-btn {
-      width: 52rpx;
-      height: 52rpx;
+      width: 40rpx;
+      height: 40rpx;
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -588,7 +591,7 @@
       }
 
       &.minus {
-        background: $bg-color;
+        background: $bg-white;
 
         .stepper-btn-text {
           color: $text-secondary;
@@ -605,19 +608,19 @@
     }
 
     .stepper-btn-text {
-      font-size: 32rpx;
-      font-weight: 300;
+      font-size: 24rpx;
+      font-weight: 400;
       line-height: 1;
     }
 
     .stepper-value {
-      min-width: 56rpx;
+      min-width: 40rpx;
       text-align: center;
     }
 
     .stepper-num {
-      font-size: 32rpx;
-      font-weight: 500;
+      font-size: 26rpx;
+      font-weight: 600;
       color: $text-primary;
     }
   }
