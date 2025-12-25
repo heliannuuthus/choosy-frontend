@@ -86,11 +86,6 @@ const Recipe = () => {
   const [cookingList, setCookingList] = useState<CookingListItem[]>([]);
   const [showCookingList, setShowCookingList] = useState(false);
   const [scrollHeight, setScrollHeight] = useState<number>(0);
-  const [showServingsModal, setShowServingsModal] = useState(false);
-  const [selectedRecipe, setSelectedRecipe] = useState<RecipeListItem | null>(
-    null
-  );
-  const [selectedServings, setSelectedServings] = useState(1);
   const pageSize = 20;
 
   // 使用 ref 保存最新的 searchValue
@@ -303,55 +298,25 @@ const Recipe = () => {
     return name.replace(/的做法$/, '');
   }, []);
 
-  // 点击添加按钮，打开份数选择
+  // 点击添加按钮，直接添加 1 份
   const handleAddClick = useCallback(
     (recipe: RecipeListItem) => {
-      const existingItem = cookingList.find(item => item.id === recipe.id);
-      if (existingItem) {
-        setSelectedServings(existingItem.servings);
-      } else {
-        setSelectedServings(1);
-      }
-      setSelectedRecipe(recipe);
-      setShowServingsModal(true);
-    },
-    [cookingList]
-  );
-
-  // 确认添加到菜单
-  const confirmAddToList = useCallback(() => {
-    if (!selectedRecipe) return;
-
-    const existingIndex = cookingList.findIndex(
-      item => item.id === selectedRecipe.id
-    );
-
-    if (existingIndex >= 0) {
-      // 更新份数
-      const newList = [...cookingList];
-      newList[existingIndex].servings = selectedServings;
-      setCookingList(newList);
-      saveCookingList(newList);
-    } else {
-      // 新增
       const newItem: CookingListItem = {
-        id: selectedRecipe.id,
-        name: formatRecipeName(selectedRecipe.name),
-        description: selectedRecipe.description,
-        image_path: selectedRecipe.image_path,
-        category: selectedRecipe.category,
-        tags: selectedRecipe.tags,
-        servings: selectedServings,
+        id: recipe.id,
+        name: formatRecipeName(recipe.name),
+        description: recipe.description,
+        image_path: recipe.image_path,
+        category: recipe.category,
+        tags: recipe.tags,
+        servings: 1,
         addedAt: Date.now(),
       };
       const newList = [...cookingList, newItem];
       setCookingList(newList);
       saveCookingList(newList);
-    }
-
-    setShowServingsModal(false);
-    setSelectedRecipe(null);
-  }, [selectedRecipe, selectedServings, cookingList, formatRecipeName]);
+    },
+    [cookingList, formatRecipeName]
+  );
 
   // 从菜单移除
   const removeFromList = useCallback(
@@ -815,66 +780,6 @@ const Recipe = () => {
           )}
         </View>
       </AtFloatLayout>
-
-      {/* 份数选择弹窗 */}
-      {showServingsModal && selectedRecipe && (
-        <View
-          className="servings-modal-mask"
-          onClick={() => setShowServingsModal(false)}
-        >
-          <View className="servings-modal" onClick={e => e.stopPropagation()}>
-            <View className="servings-modal-header">
-              <Text className="servings-modal-title">
-                {formatRecipeName(selectedRecipe.name)}
-              </Text>
-            </View>
-            <View className="servings-modal-body">
-              <Text className="servings-hint">选择份数</Text>
-              <View className="servings-selector">
-                <View
-                  className={`servings-btn ${selectedServings <= 1 ? 'disabled' : ''}`}
-                  onClick={() =>
-                    selectedServings > 1 && setSelectedServings(s => s - 1)
-                  }
-                >
-                  <Text className="servings-btn-text">−</Text>
-                </View>
-                <View className="servings-value">
-                  <Text className="servings-num">{selectedServings}</Text>
-                  <Text className="servings-unit">人份</Text>
-                </View>
-                <View
-                  className="servings-btn"
-                  onClick={() => setSelectedServings(s => s + 1)}
-                >
-                  <Text className="servings-btn-text">+</Text>
-                </View>
-              </View>
-            </View>
-            <View className="servings-modal-footer">
-              {isInCookingList(selectedRecipe.id) && (
-                <View
-                  className="servings-modal-btn remove"
-                  onClick={() => {
-                    removeFromList(selectedRecipe.id);
-                    setShowServingsModal(false);
-                  }}
-                >
-                  <Text>移除</Text>
-                </View>
-              )}
-              <View
-                className="servings-modal-btn confirm"
-                onClick={confirmAddToList}
-              >
-                <Text>
-                  {isInCookingList(selectedRecipe.id) ? '更新' : '添加到菜单'}
-                </Text>
-              </View>
-            </View>
-          </View>
-        </View>
-      )}
     </View>
   );
 };
