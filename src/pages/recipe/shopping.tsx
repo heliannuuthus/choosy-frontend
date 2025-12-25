@@ -38,6 +38,7 @@ const ShoppingPage = () => {
     Array<{ detail: RecipeDetail; servings: number }>
   >([]);
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
+  const [animatingItems, setAnimatingItems] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const loadRecipeDetails = async () => {
@@ -111,15 +112,27 @@ const ShoppingPage = () => {
   }, [recipes]);
 
   const toggleCheck = useCallback((name: string) => {
-    setCheckedItems(prev => {
-      const next = new Set(prev);
-      if (next.has(name)) {
+    // 先添加动画状态
+    setAnimatingItems(prev => new Set(prev).add(name));
+
+    // 延迟后更新勾选状态
+    setTimeout(() => {
+      setCheckedItems(prev => {
+        const next = new Set(prev);
+        if (next.has(name)) {
+          next.delete(name);
+        } else {
+          next.add(name);
+        }
+        return next;
+      });
+      // 移除动画状态
+      setAnimatingItems(prev => {
+        const next = new Set(prev);
         next.delete(name);
-      } else {
-        next.add(name);
-      }
-      return next;
-    });
+        return next;
+      });
+    }, 200);
   }, []);
 
   // 分离未勾选和已勾选的食材
@@ -192,7 +205,7 @@ const ShoppingPage = () => {
               {uncheckedIngredients.map(ing => (
                 <View
                   key={ing.name}
-                  className="ingredient-item"
+                  className={`ingredient-item ${animatingItems.has(ing.name) ? 'fade-out' : ''}`}
                   onClick={() => toggleCheck(ing.name)}
                 >
                   <View className="check-box">
@@ -228,7 +241,7 @@ const ShoppingPage = () => {
               {checkedIngredients.map(ing => (
                 <View
                   key={ing.name}
-                  className="ingredient-item checked"
+                  className={`ingredient-item checked ${animatingItems.has(ing.name) ? 'fade-out' : ''}`}
                   onClick={() => toggleCheck(ing.name)}
                 >
                   <View className="check-box checked">
