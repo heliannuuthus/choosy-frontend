@@ -58,6 +58,10 @@ const ProgressRing = ({
   size?: number;
   strokeWidth?: number;
 }) => {
+  const progressPercent = Math.min(Math.max(progress, 0), 1);
+  const angle = progressPercent * 360;
+  const isOverHalf = progressPercent > 0.5;
+
   return (
     <View className="progress-ring" style={{ width: size, height: size }}>
       <View
@@ -69,20 +73,50 @@ const ProgressRing = ({
           borderRadius: size / 2,
         }}
       />
-      <View
-        className="progress-ring-fill"
-        style={{
-          width: size,
-          height: size,
-          borderWidth: strokeWidth,
-          borderRadius: size / 2,
-          // 使用 clip-path 模拟进度
-          transform: `rotate(${-90 + progress * 360}deg)`,
-        }}
-      />
+      {/* 右半圆：0-180度 */}
+      <View className="progress-ring-wrapper progress-ring-wrapper-right">
+        <View
+          className="progress-ring-fill"
+          style={{
+            width: size,
+            height: size,
+            borderWidth: strokeWidth,
+            borderRadius: size / 2,
+            borderTopColor: isOverHalf ? '#fff' : 'transparent',
+            borderRightColor: '#fff',
+            borderBottomColor: isOverHalf ? '#fff' : 'transparent',
+            borderLeftColor: 'transparent',
+            transform: `rotate(${-90 + Math.min(angle, 180)}deg)`,
+            left: `-${size / 2}px`,
+            opacity: angle > 0 ? 1 : 0,
+          }}
+        />
+      </View>
+      {/* 左半圆：180-360度 */}
+      {isOverHalf && (
+        <View className="progress-ring-wrapper progress-ring-wrapper-left">
+          <View
+            className="progress-ring-fill"
+            style={{
+              width: size,
+              height: size,
+              borderWidth: strokeWidth,
+              borderRadius: size / 2,
+              borderTopColor: 'transparent',
+              borderRightColor: 'transparent',
+              borderBottomColor: '#fff',
+              borderLeftColor: '#fff',
+              transform: `rotate(${-90 + (angle - 180)}deg)`,
+              left: 0,
+            }}
+          />
+        </View>
+      )}
       <View className="progress-ring-center">
-        <Text className="progress-percent">{Math.round(progress * 100)}%</Text>
-        <Text className="progress-label">已购</Text>
+        <Text className="progress-percent">
+          {Math.round(progressPercent * 100)}%
+        </Text>
+        <Text className="progress-label">完成度</Text>
       </View>
     </View>
   );
@@ -262,7 +296,7 @@ const ShoppingPage = () => {
     return (
       <View className="shopping-page">
         <View className="loading-container">
-          <AtActivityIndicator mode="center" content="正在生成购物清单..." />
+          <AtActivityIndicator mode="center" content="正在整理购物清单..." />
         </View>
       </View>
     );
@@ -275,10 +309,13 @@ const ShoppingPage = () => {
           <View className="empty-icon-wrapper">
             <Text className="empty-icon">🛒</Text>
           </View>
-          <Text className="empty-title">购物清单是空的</Text>
-          <Text className="empty-hint">先去添加一些菜品到待做清单吧</Text>
+          <Text className="empty-title">购物清单还是空的</Text>
+          <Text className="empty-hint">
+            先去添加一些想做的菜品，
+            <Text className="empty-hint-highlight">一键生成</Text>购物清单
+          </Text>
           <View className="back-btn" onClick={() => Taro.navigateBack()}>
-            <Text className="back-btn-text">返回选菜</Text>
+            <Text className="back-btn-text">去添加菜品</Text>
           </View>
         </View>
       </View>
@@ -292,19 +329,19 @@ const ShoppingPage = () => {
         <View className="header-bg" />
         <View className="header-content">
           <View className="header-left">
-            <Text className="header-title">购物清单</Text>
+            <Text className="header-title">我的购物清单</Text>
             <Text className="header-subtitle">
               {recipes.length} 道菜 · {totalCount} 种食材
             </Text>
             <View className="stats-row">
               <View className="stat-item">
                 <Text className="stat-value">{totalCount - checkedCount}</Text>
-                <Text className="stat-label">待购</Text>
+                <Text className="stat-label">待购买</Text>
               </View>
               <View className="stat-divider" />
               <View className="stat-item">
                 <Text className="stat-value checked">{checkedCount}</Text>
-                <Text className="stat-label">已购</Text>
+                <Text className="stat-label">已完成</Text>
               </View>
             </View>
           </View>
@@ -351,7 +388,7 @@ const ShoppingPage = () => {
                     }}
                   >
                     <Text className="check-all-text">
-                      {isAllChecked ? '取消全选' : '全选'}
+                      {isAllChecked ? '取消' : '全选'}
                     </Text>
                   </View>
                   <View
@@ -408,14 +445,14 @@ const ShoppingPage = () => {
                               <View className="ingredient-sources">
                                 {item.sources.map((src, idx) => (
                                   <Text key={idx} className="source-item">
-                                    {src.recipeName}: {src.quantity}
+                                    {src.recipeName} 需要 {src.quantity}
                                   </Text>
                                 ))}
                               </View>
                             )}
                             {item.sources.length === 1 && (
                               <Text className="ingredient-recipe">
-                                {item.sources[0].recipeName}
+                                来自 {item.sources[0].recipeName}
                               </Text>
                             )}
                           </View>
@@ -431,8 +468,8 @@ const ShoppingPage = () => {
         {/* 菜品清单 */}
         <View className="recipes-section">
           <View className="section-header">
-            <Text className="section-icon">📋</Text>
-            <Text className="section-title">本次菜品</Text>
+            <Text className="section-icon">🍽️</Text>
+            <Text className="section-title">本次要做的菜</Text>
           </View>
           <ScrollView
             className="recipes-scroll"
@@ -458,7 +495,7 @@ const ShoppingPage = () => {
                     <Text className="recipe-name">
                       {detail.name.replace(/的做法$/, '')}
                     </Text>
-                    <Text className="recipe-servings">{servings} 人份</Text>
+                    <Text className="recipe-servings">{servings} 人量</Text>
                   </View>
                 </View>
               ))}
