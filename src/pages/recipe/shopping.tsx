@@ -3,6 +3,12 @@ import { View, Text, ScrollView, Image } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import { AtIcon, AtActivityIndicator } from 'taro-ui';
 import { getRecipeDetail, RecipeDetail } from '../../services/recipe';
+import {
+  getIngredientCategory,
+  mergeQuantities,
+  INGREDIENT_CATEGORIES,
+  type IngredientCategory,
+} from '../../utils/ingredient';
 import './shopping.scss';
 
 const COOKING_LIST_KEY = 'cooking_list';
@@ -13,14 +19,24 @@ interface CookingListItem {
   servings: number;
 }
 
+interface IngredientSource {
+  recipeName: string;
+  quantity: string;
+  servings: number;
+}
+
 interface MergedIngredient {
   name: string;
-  items: Array<{
-    recipeName: string;
-    quantity: string;
-    servings: number;
-  }>;
+  category: IngredientCategory;
+  sources: IngredientSource[];
+  totalQuantity: string;
   checked: boolean;
+}
+
+interface GroupedIngredients {
+  category: IngredientCategory;
+  items: MergedIngredient[];
+  allChecked: boolean;
 }
 
 const getCookingList = (): CookingListItem[] => {
@@ -32,13 +48,89 @@ const getCookingList = (): CookingListItem[] => {
   }
 };
 
+// 环形进度条组件
+const ProgressRing = ({
+  progress,
+  size = 120,
+  strokeWidth = 8,
+}: {
+  progress: number;
+  size?: number;
+  strokeWidth?: number;
+}) => {
+  const progressPercent = Math.min(Math.max(progress, 0), 1);
+  const angle = progressPercent * 360;
+  const isOverHalf = progressPercent > 0.5;
+
+  return (
+    <View className="progress-ring" style={{ width: size, height: size }}>
+      <View
+        className="progress-ring-bg"
+        style={{
+          width: size,
+          height: size,
+          borderWidth: strokeWidth,
+          borderRadius: size / 2,
+        }}
+      />
+      {/* 右半圆：0-180度 */}
+      <View className="progress-ring-wrapper progress-ring-wrapper-right">
+        <View
+          className="progress-ring-fill"
+          style={{
+            width: size,
+            height: size,
+            borderWidth: strokeWidth,
+            borderRadius: size / 2,
+            borderTopColor: isOverHalf ? '#fff' : 'transparent',
+            borderRightColor: '#fff',
+            borderBottomColor: isOverHalf ? '#fff' : 'transparent',
+            borderLeftColor: 'transparent',
+            transform: `rotate(${-90 + Math.min(angle, 180)}deg)`,
+            left: `-${size / 2}px`,
+            opacity: angle > 0 ? 1 : 0,
+          }}
+        />
+      </View>
+      {/* 左半圆：180-360度 */}
+      {isOverHalf && (
+        <View className="progress-ring-wrapper progress-ring-wrapper-left">
+          <View
+            className="progress-ring-fill"
+            style={{
+              width: size,
+              height: size,
+              borderWidth: strokeWidth,
+              borderRadius: size / 2,
+              borderTopColor: 'transparent',
+              borderRightColor: 'transparent',
+              borderBottomColor: '#fff',
+              borderLeftColor: '#fff',
+              transform: `rotate(${-90 + (angle - 180)}deg)`,
+              left: 0,
+            }}
+          />
+        </View>
+      )}
+      <View className="progress-ring-center">
+        <Text className="progress-percent">
+          {Math.round(progressPercent * 100)}%
+        </Text>
+        <Text className="progress-label">完成度</Text>
+      </View>
+    </View>
+  );
+};
+
 const ShoppingPage = () => {
   const [loading, setLoading] = useState(true);
   const [recipes, setRecipes] = useState<
     Array<{ detail: RecipeDetail; servings: number }>
   >([]);
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
-  const [animatingItems, setAnimatingItems] = useState<Set<string>>(new Set());
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(
+    new Set()
+  );
 
   useEffect(() => {
     const loadRecipeDetails = async () => {
@@ -68,7 +160,8 @@ const ShoppingPage = () => {
     loadRecipeDetails();
   }, []);
 
-  const mergedIngredients = useMemo(() => {
+  // 合并并分类食材
+  const groupedIngredients = useMemo(() => {
     const ingredientMap = new Map<string, MergedIngredient>();
 
     recipes.forEach(({ detail, servings }) => {
@@ -76,87 +169,134 @@ const ShoppingPage = () => {
 
       detail.ingredients.forEach(ing => {
         const key = ing.name;
-        const existing = ingredientMap.get(key);
-
         let quantityText = ing.text_quantity;
+
         if (ing.quantity && ratio !== 1) {
           const scaledQty = ing.quantity * ratio;
           quantityText = `${scaledQty % 1 === 0 ? scaledQty : scaledQty.toFixed(1)}${ing.unit || ''}`;
         }
 
+        const source: IngredientSource = {
+          recipeName: detail.name.replace(/的做法$/, ''),
+          quantity: quantityText,
+          servings,
+        };
+
+        const existing = ingredientMap.get(key);
         if (existing) {
-          existing.items.push({
-            recipeName: detail.name.replace(/的做法$/, ''),
-            quantity: quantityText,
-            servings,
-          });
+          existing.sources.push(source);
+          // 重新计算总量
+          const merged = mergeQuantities(existing.sources);
+          existing.totalQuantity = merged.total;
         } else {
           ingredientMap.set(key, {
             name: key,
-            items: [
-              {
-                recipeName: detail.name.replace(/的做法$/, ''),
-                quantity: quantityText,
-                servings,
-              },
-            ],
+            category: getIngredientCategory(ing.category),
+            sources: [source],
+            totalQuantity: quantityText,
             checked: false,
           });
         }
       });
     });
 
-    return Array.from(ingredientMap.values()).sort((a, b) =>
-      a.name.localeCompare(b.name, 'zh-CN')
-    );
-  }, [recipes]);
+    // 按分类分组
+    const groups: GroupedIngredients[] = [];
+    const categoryMap = new Map<string, MergedIngredient[]>();
 
-  const toggleCheck = useCallback((name: string) => {
-    // 先添加动画状态
-    setAnimatingItems(prev => new Set(prev).add(name));
+    ingredientMap.forEach(ing => {
+      const catKey = ing.category.key;
+      if (!categoryMap.has(catKey)) {
+        categoryMap.set(catKey, []);
+      }
+      categoryMap.get(catKey)!.push(ing);
+    });
 
-    // 延迟后更新勾选状态
-    setTimeout(() => {
-      setCheckedItems(prev => {
-        const next = new Set(prev);
-        if (next.has(name)) {
-          next.delete(name);
-        } else {
-          next.add(name);
-        }
-        return next;
-      });
-      // 移除动画状态
-      setAnimatingItems(prev => {
-        const next = new Set(prev);
-        next.delete(name);
-        return next;
-      });
-    }, 200);
-  }, []);
-
-  // 分离未勾选和已勾选的食材
-  const { uncheckedIngredients, checkedIngredients } = useMemo(() => {
-    const unchecked: typeof mergedIngredients = [];
-    const checked: typeof mergedIngredients = [];
-    mergedIngredients.forEach(ing => {
-      if (checkedItems.has(ing.name)) {
-        checked.push(ing);
-      } else {
-        unchecked.push(ing);
+    // 按预定义顺序排列分类
+    INGREDIENT_CATEGORIES.forEach(cat => {
+      const items = categoryMap.get(cat.key);
+      if (items && items.length > 0) {
+        // 按名称排序
+        items.sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'));
+        groups.push({
+          category: cat,
+          items,
+          allChecked: false,
+        });
       }
     });
-    return { uncheckedIngredients: unchecked, checkedIngredients: checked };
-  }, [mergedIngredients, checkedItems]);
 
-  const uncheckedCount = uncheckedIngredients.length;
-  const checkedCount = checkedIngredients.length;
+    return groups;
+  }, [recipes]);
+
+  // 计算进度
+  const { totalCount, checkedCount, progress } = useMemo(() => {
+    let total = 0;
+    let checked = 0;
+
+    groupedIngredients.forEach(group => {
+      group.items.forEach(item => {
+        total++;
+        if (checkedItems.has(item.name)) {
+          checked++;
+        }
+      });
+    });
+
+    return {
+      totalCount: total,
+      checkedCount: checked,
+      progress: total > 0 ? checked / total : 0,
+    };
+  }, [groupedIngredients, checkedItems]);
+
+  const toggleCheck = useCallback((name: string) => {
+    setCheckedItems(prev => {
+      const next = new Set(prev);
+      if (next.has(name)) {
+        next.delete(name);
+      } else {
+        next.add(name);
+      }
+      return next;
+    });
+  }, []);
+
+  const toggleGroupCollapse = useCallback((categoryKey: string) => {
+    setCollapsedGroups(prev => {
+      const next = new Set(prev);
+      if (next.has(categoryKey)) {
+        next.delete(categoryKey);
+      } else {
+        next.add(categoryKey);
+      }
+      return next;
+    });
+  }, []);
+
+  const toggleGroupCheck = useCallback(
+    (group: GroupedIngredients) => {
+      const allChecked = group.items.every(item => checkedItems.has(item.name));
+      setCheckedItems(prev => {
+        const next = new Set(prev);
+        group.items.forEach(item => {
+          if (allChecked) {
+            next.delete(item.name);
+          } else {
+            next.add(item.name);
+          }
+        });
+        return next;
+      });
+    },
+    [checkedItems]
+  );
 
   if (loading) {
     return (
       <View className="shopping-page">
         <View className="loading-container">
-          <AtActivityIndicator mode="center" content="正在生成购物清单..." />
+          <AtActivityIndicator mode="center" content="正在整理购物清单..." />
         </View>
       </View>
     );
@@ -164,13 +304,18 @@ const ShoppingPage = () => {
 
   if (recipes.length === 0) {
     return (
-      <View className="shopping-page">
+      <View className="shopping-page empty-page">
         <View className="empty-state">
-          <Text className="empty-icon">🛒</Text>
-          <Text className="empty-text">菜单是空的</Text>
-          <Text className="empty-hint">先去添加一些菜品吧</Text>
+          <View className="empty-icon-wrapper">
+            <Text className="empty-icon">🛒</Text>
+          </View>
+          <Text className="empty-title">购物清单还是空的</Text>
+          <Text className="empty-hint">
+            先去添加一些想做的菜品，
+            <Text className="empty-hint-highlight">一键生成</Text>购物清单
+          </Text>
           <View className="back-btn" onClick={() => Taro.navigateBack()}>
-            <Text className="back-btn-text">返回</Text>
+            <Text className="back-btn-text">去添加菜品</Text>
           </View>
         </View>
       </View>
@@ -179,117 +324,183 @@ const ShoppingPage = () => {
 
   return (
     <View className="shopping-page">
+      {/* 头部统计区 */}
       <View className="shopping-header">
-        <View className="header-info">
-          <Text className="header-title">购物清单</Text>
-          <Text className="header-subtitle">
-            共 {mergedIngredients.length} 种食材 · {recipes.length} 道菜
-          </Text>
-        </View>
-        <View className="header-stats">
-          <Text className="stats-text">
-            待购 {uncheckedCount} · 已购 {checkedCount}
-          </Text>
+        <View className="header-bg" />
+        <View className="header-content">
+          <View className="header-left">
+            <Text className="header-title">我的购物清单</Text>
+            <Text className="header-subtitle">
+              {recipes.length} 道菜 · {totalCount} 种食材
+            </Text>
+            <View className="stats-row">
+              <View className="stat-item">
+                <Text className="stat-value">{totalCount - checkedCount}</Text>
+                <Text className="stat-label">待购买</Text>
+              </View>
+              <View className="stat-divider" />
+              <View className="stat-item">
+                <Text className="stat-value checked">{checkedCount}</Text>
+                <Text className="stat-label">已完成</Text>
+              </View>
+            </View>
+          </View>
+          <View className="header-right">
+            <ProgressRing progress={progress} size={100} strokeWidth={8} />
+          </View>
         </View>
       </View>
 
       <ScrollView className="shopping-scroll" scrollY>
-        {/* 待购食材 */}
-        {uncheckedIngredients.length > 0 && (
-          <View className="ingredients-section">
-            <View className="section-header">
-              <Text className="section-label">🛒 待购</Text>
-              <Text className="section-count">{uncheckedCount}</Text>
-            </View>
-            <View className="ingredients-list">
-              {uncheckedIngredients.map(ing => (
-                <View
-                  key={ing.name}
-                  className={`ingredient-item ${animatingItems.has(ing.name) ? 'fade-out' : ''}`}
-                  onClick={() => toggleCheck(ing.name)}
-                >
-                  <View className="check-box">
-                    <View className="check-inner" />
-                  </View>
-                  <View className="ingredient-content">
-                    <Text className="ingredient-name">{ing.name}</Text>
-                    <View className="ingredient-details">
-                      {ing.items.map((item, idx) => (
-                        <Text key={idx} className="detail-item">
-                          {item.quantity}
-                          <Text className="detail-recipe">
-                            （{item.recipeName}）
-                          </Text>
-                        </Text>
-                      ))}
-                    </View>
-                  </View>
-                </View>
-              ))}
-            </View>
-          </View>
-        )}
+        {/* 分类食材列表 */}
+        {groupedIngredients.map(group => {
+          const isCollapsed = collapsedGroups.has(group.category.key);
+          const groupCheckedCount = group.items.filter(item =>
+            checkedItems.has(item.name)
+          ).length;
+          const isAllChecked = groupCheckedCount === group.items.length;
 
-        {/* 已购食材 */}
-        {checkedIngredients.length > 0 && (
-          <View className="ingredients-section checked-section">
-            <View className="section-header">
-              <Text className="section-label">✅ 已购</Text>
-              <Text className="section-count">{checkedCount}</Text>
-            </View>
-            <View className="ingredients-list">
-              {checkedIngredients.map(ing => (
-                <View
-                  key={ing.name}
-                  className={`ingredient-item checked ${animatingItems.has(ing.name) ? 'fade-out' : ''}`}
-                  onClick={() => toggleCheck(ing.name)}
-                >
-                  <View className="check-box checked">
-                    <AtIcon value="check" size="12" color="#fff" />
-                  </View>
-                  <View className="ingredient-content">
-                    <Text className="ingredient-name">{ing.name}</Text>
-                    <View className="ingredient-details">
-                      {ing.items.map((item, idx) => (
-                        <Text key={idx} className="detail-item">
-                          {item.quantity}
-                        </Text>
-                      ))}
-                    </View>
+          return (
+            <View key={group.category.key} className="ingredient-group">
+              {/* 分组头部 */}
+              <View
+                className="group-header"
+                onClick={() => toggleGroupCollapse(group.category.key)}
+              >
+                <View className="group-title-section">
+                  <Text className="group-icon">{group.category.icon}</Text>
+                  <Text className="group-title">{group.category.label}</Text>
+                  <View
+                    className="group-badge"
+                    style={{ backgroundColor: group.category.color }}
+                  >
+                    <Text className="group-badge-text">
+                      {groupCheckedCount}/{group.items.length}
+                    </Text>
                   </View>
                 </View>
-              ))}
+                <View className="group-actions">
+                  <View
+                    className={`group-check-all ${isAllChecked ? 'checked' : ''}`}
+                    onClick={e => {
+                      e.stopPropagation();
+                      toggleGroupCheck(group);
+                    }}
+                  >
+                    <Text className="check-all-text">
+                      {isAllChecked ? '取消' : '全选'}
+                    </Text>
+                  </View>
+                  <View
+                    className={`group-arrow ${isCollapsed ? '' : 'expanded'}`}
+                  >
+                    <AtIcon value="chevron-down" size="16" color="#999" />
+                  </View>
+                </View>
+              </View>
+
+              {/* 食材列表 */}
+              {!isCollapsed && (
+                <View className="group-items">
+                  {[...group.items]
+                    .sort((a, b) => {
+                      const aChecked = checkedItems.has(a.name);
+                      const bChecked = checkedItems.has(b.name);
+                      if (aChecked === bChecked) return 0;
+                      return aChecked ? 1 : -1;
+                    })
+                    .map(item => {
+                      const isChecked = checkedItems.has(item.name);
+                      return (
+                        <View
+                          key={item.name}
+                          className={`ingredient-card ${isChecked ? 'checked' : ''}`}
+                          onClick={() => toggleCheck(item.name)}
+                        >
+                          <View
+                            className={`check-circle ${isChecked ? 'checked' : ''}`}
+                            style={{
+                              borderColor: isChecked
+                                ? group.category.color
+                                : '#ddd',
+                              backgroundColor: isChecked
+                                ? group.category.color
+                                : 'transparent',
+                            }}
+                          >
+                            {isChecked && (
+                              <AtIcon value="check" size="14" color="#fff" />
+                            )}
+                          </View>
+                          <View className="ingredient-info">
+                            <View className="ingredient-main">
+                              <Text className="ingredient-name">
+                                {item.name}
+                              </Text>
+                              <Text className="ingredient-total">
+                                {item.totalQuantity}
+                              </Text>
+                            </View>
+                            {item.sources.length > 1 && (
+                              <View className="ingredient-sources">
+                                {item.sources.map((src, idx) => (
+                                  <Text key={idx} className="source-item">
+                                    {src.recipeName} 需要 {src.quantity}
+                                  </Text>
+                                ))}
+                              </View>
+                            )}
+                            {item.sources.length === 1 && (
+                              <Text className="ingredient-recipe">
+                                来自 {item.sources[0].recipeName}
+                              </Text>
+                            )}
+                          </View>
+                        </View>
+                      );
+                    })}
+                </View>
+              )}
             </View>
-          </View>
-        )}
+          );
+        })}
 
         {/* 菜品清单 */}
         <View className="recipes-section">
           <View className="section-header">
-            <Text className="section-label">📋 菜品</Text>
-            <Text className="section-count">{recipes.length}</Text>
+            <Text className="section-icon">🍽️</Text>
+            <Text className="section-title">本次要做的菜</Text>
           </View>
-          <View className="recipes-list">
-            {recipes.map(({ detail, servings }) => (
-              <View key={detail.id} className="recipe-item">
-                {detail.image_path ? (
-                  <Image
-                    src={detail.image_path}
-                    className="recipe-image"
-                    mode="aspectFill"
-                  />
-                ) : (
-                  <View className="recipe-image-placeholder">🍽️</View>
-                )}
-                <View className="recipe-info">
-                  <Text className="recipe-name">
-                    {detail.name.replace(/的做法$/, '')}
-                  </Text>
-                  <Text className="recipe-servings">{servings}人份</Text>
+          <ScrollView
+            className="recipes-scroll"
+            scrollX
+            enhanced
+            showScrollbar={false}
+          >
+            <View className="recipes-list">
+              {recipes.map(({ detail, servings }) => (
+                <View key={detail.id} className="recipe-card">
+                  {detail.image_path ? (
+                    <Image
+                      src={detail.image_path}
+                      className="recipe-image"
+                      mode="aspectFill"
+                    />
+                  ) : (
+                    <View className="recipe-image-placeholder">
+                      <Text className="placeholder-emoji">🍽️</Text>
+                    </View>
+                  )}
+                  <View className="recipe-content">
+                    <Text className="recipe-name">
+                      {detail.name.replace(/的做法$/, '')}
+                    </Text>
+                    <Text className="recipe-servings">{servings} 人量</Text>
+                  </View>
                 </View>
-              </View>
-            ))}
-          </View>
+              ))}
+            </View>
+          </ScrollView>
         </View>
 
         <View className="bottom-spacer" />

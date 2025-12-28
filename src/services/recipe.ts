@@ -21,6 +21,7 @@ export interface RecipeListItem {
 
 export interface RecipeIngredient {
   name: string;
+  category?: string;
   quantity?: number;
   unit?: string;
   text_quantity: string;
