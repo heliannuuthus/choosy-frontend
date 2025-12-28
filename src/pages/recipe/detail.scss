@@ -299,8 +299,10 @@
   background: $bg-white;
   border-radius: 16rpx;
   padding: 20rpx;
+  padding-left: 24rpx;
   box-shadow: $card-shadow;
   border: 1rpx solid $border-color;
+  border-left: 6rpx solid #78909c;
   position: relative;
   overflow: hidden;
 
@@ -314,6 +316,18 @@
     justify-content: space-between;
     gap: 12rpx;
     flex-wrap: wrap;
+  }
+
+  .ingredient-name-row {
+    display: flex;
+    align-items: center;
+    gap: 8rpx;
+    min-width: 0;
+  }
+
+  .ingredient-icon {
+    font-size: 28rpx;
+    flex-shrink: 0;
   }
 
   .ingredient-name {

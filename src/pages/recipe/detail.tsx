@@ -6,6 +6,7 @@ import { getRecipeDetail, RecipeDetail } from '../../services/recipe';
 import { checkFavorite, toggleFavorite } from '../../services/favorite';
 import { isLoggedIn } from '../../services/user';
 import { getCategoryColor, getCategoryLabel } from '../../utils/category';
+import { getIngredientCategory } from '../../utils/ingredient';
 import starFilledIcon from '../../assets/icons/star-filled.svg';
 import starOutlineIcon from '../../assets/icons/star-outline.svg';
 // 组件样式通过 babel-plugin-import 自动按需导入
@@ -285,13 +286,18 @@ const RecipeDetailPage = () => {
               const isWide =
                 ingredient.name.length + ingredient.text_quantity.length > 12 ||
                 (ingredient.notes && ingredient.notes.length > 10);
+              const category = getIngredientCategory(ingredient.category);
               return (
                 <View
                   key={index}
                   className={`ingredient-card ${isWide ? 'wide' : ''}`}
+                  style={{ borderLeftColor: category.color }}
                 >
                   <View className="ingredient-header">
-                    <Text className="ingredient-name">{ingredient.name}</Text>
+                    <View className="ingredient-name-row">
+                      <Text className="ingredient-icon">{category.icon}</Text>
+                      <Text className="ingredient-name">{ingredient.name}</Text>
+                    </View>
                     <Text className="ingredient-quantity">
                       {ingredient.text_quantity}
                     </Text>
