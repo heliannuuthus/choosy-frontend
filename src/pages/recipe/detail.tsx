@@ -4,6 +4,7 @@ import Taro from '@tarojs/taro';
 import { AtMessage, AtRate, AtTimeline, AtFloatLayout } from 'taro-ui';
 import { getRecipeDetail, RecipeDetail } from '../../services/recipe';
 import { checkFavorite, toggleFavorite } from '../../services/favorite';
+import { addViewHistory } from '../../services/history';
 import { isLoggedIn } from '../../services/user';
 import { getCategoryColor, getCategoryLabel } from '../../utils/category';
 import { getIngredientCategory } from '../../utils/ingredient';
@@ -117,6 +118,13 @@ const RecipeDetailPage = () => {
       Taro.setNavigationBarTitle({
         title: recipeData.name,
       });
+
+      // 异步添加浏览记录（静默失败，不阻塞渲染）
+      if (isLoggedIn()) {
+        addViewHistory(recipeId).catch(err => {
+          console.warn('添加浏览记录失败:', err);
+        });
+      }
     } catch (error) {
       console.error('加载菜谱详情失败:', error);
       setLoading(false);
