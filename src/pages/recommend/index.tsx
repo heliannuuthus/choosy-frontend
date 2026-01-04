@@ -54,7 +54,7 @@ const PermissionRequest = ({
 
   return (
     <View className="permission-container">
-      <View className="permission-icon">🧭</View>
+      <View className="permission-icon">🍳</View>
       <Text className="permission-title">需要获取位置信息</Text>
       <Text className="permission-desc">
         为了给您推荐适合当前天气和时间的菜品，
@@ -94,21 +94,21 @@ const ErrorState = ({
 }) => {
   const errorConfig = {
     network: {
-      illustration: '📡',
+      illustration: '🍳',
       title: '网络似乎开小差了',
       subtitle: '请检查您的网络连接',
       color: '#3498db',
       bgGradient: 'linear-gradient(135deg, #ebf4ff 0%, #e8f4f8 100%)',
     },
     auth: {
-      illustration: '🔑',
+      illustration: '🍳',
       title: '登录状态已失效',
       subtitle: '重新加载将自动恢复',
       color: '#9b59b6',
       bgGradient: 'linear-gradient(135deg, #f5f0ff 0%, #faf0ff 100%)',
     },
     general: {
-      illustration: '🌧️',
+      illustration: '🍳',
       title: '出了点小问题',
       subtitle: message || '请稍后再试',
       color: '#e67e22',
@@ -168,12 +168,12 @@ const ErrorState = ({
       <View className="error-footer">
         <View className="footer-tips">
           <View className="tip-row">
-            <Text className="tip-icon">📶</Text>
+            <Text className="tip-icon">🍳</Text>
             <Text className="tip-label">检查网络连接</Text>
           </View>
           <View className="tip-divider" />
           <View className="tip-row">
-            <Text className="tip-icon">📍</Text>
+            <Text className="tip-icon">🍳</Text>
             <Text className="tip-label">开启位置权限</Text>
           </View>
         </View>
@@ -430,7 +430,7 @@ const Recommend = () => {
           {/* 顶部：位置 + 时间 */}
           <View className="card-header">
             <Text className="location">
-              🧭 {context.location?.city || '未知位置'}
+              🍳 {context.location?.city || '未知位置'}
               {context.location?.district && ` · ${context.location.district}`}
             </Text>
             {context.time && (
@@ -520,7 +520,7 @@ const Recommend = () => {
             {aiError && (
               <View className="ai-error-card">
                 <View className="error-card-icon">
-                  <Text className="icon-emoji">😔</Text>
+                  <Text className="icon-emoji">🍳</Text>
                 </View>
                 <View className="error-card-content">
                   <Text className="error-card-title">推荐生成失败</Text>
@@ -583,7 +583,7 @@ const Recommend = () => {
             {/* 推荐理由 */}
             {aiRecommendations.reason && (
               <View className="reason-card">
-                <Text className="reason-icon">💡</Text>
+                <Text className="reason-icon">🍳</Text>
                 <Text className="reason-text">{aiRecommendations.reason}</Text>
               </View>
             )}
