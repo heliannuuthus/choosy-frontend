@@ -147,7 +147,9 @@ const ShoppingPage = () => {
   // 记录刚完成移动的食材（用于淡入动画）
   const [movedItem, setMovedItem] = useState<string | null>(null);
   // 记录刚完成的分类（用于下沉动画）
-  const [completingCategory, setCompletingCategory] = useState<string | null>(null);
+  const [completingCategory, setCompletingCategory] = useState<string | null>(
+    null
+  );
 
   useEffect(() => {
     const loadRecipeDetails = async () => {
@@ -398,9 +400,7 @@ const ShoppingPage = () => {
 
       // 活跃状态在一段时间后自动清除
       setTimeout(() => {
-        setActiveCategory(prev =>
-          prev === group.category.key ? null : prev
-        );
+        setActiveCategory(prev => (prev === group.category.key ? null : prev));
       }, 3000);
     },
     [checkedItems]
@@ -533,7 +533,10 @@ const ShoppingPage = () => {
                       <View
                         key={item.name}
                         className={`ingredient-card ${isChecked ? 'checked' : ''} ${isAnimatingOut ? 'slide-out-left' : ''} ${isAnimatingIn ? 'slide-in-right' : ''}`}
-                        onClick={() => !isAnimatingOut && toggleCheck(item.name, group.category.key)}
+                        onClick={() =>
+                          !isAnimatingOut &&
+                          toggleCheck(item.name, group.category.key)
+                        }
                       >
                         <View
                           className={`check-circle ${isChecked ? 'checked' : ''}`}

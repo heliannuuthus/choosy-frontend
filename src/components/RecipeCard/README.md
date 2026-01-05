@@ -18,10 +18,10 @@
 
 ```typescript
 interface RecipeCardProps {
-  recipe: Recipe;               // 菜谱数据
-  layout?: 'grid' | 'list';     // 布局方式，默认 'grid'
-  rightSlot?: React.ReactNode;  // 右侧插槽内容（仅列表布局）
-  onClick?: () => void;         // 自定义点击事件，默认跳转到详情页
+  recipe: Recipe; // 菜谱数据
+  layout?: 'grid' | 'list'; // 布局方式，默认 'grid'
+  rightSlot?: React.ReactNode; // 右侧插槽内容（仅列表布局）
+  onClick?: () => void; // 自定义点击事件，默认跳转到详情页
 }
 ```
 
@@ -34,13 +34,9 @@ import RecipeCard from '../../components/RecipeCard/index';
 
 <View className="recipe-grid">
   {recipes.map(recipe => (
-    <RecipeCard
-      key={recipe.id}
-      recipe={recipe}
-      layout="grid"
-    />
+    <RecipeCard key={recipe.id} recipe={recipe} layout="grid" />
   ))}
-</View>
+</View>;
 ```
 
 ### 列表布局（用于菜谱列表页）
@@ -50,13 +46,9 @@ import RecipeCard from '../../components/RecipeCard/index';
 
 <View className="recipe-list">
   {recipes.map(recipe => (
-    <RecipeCard
-      key={recipe.id}
-      recipe={recipe}
-      layout="list"
-    />
+    <RecipeCard key={recipe.id} recipe={recipe} layout="list" />
   ))}
-</View>
+</View>;
 ```
 
 ### 带右侧操作按钮（菜谱列表页）
@@ -69,12 +61,16 @@ import RecipeCard from '../../components/RecipeCard/index';
   layout="list"
   rightSlot={
     <View className="stepper">
-      <View className="stepper-btn" onClick={handleMinus}>−</View>
+      <View className="stepper-btn" onClick={handleMinus}>
+        −
+      </View>
       <Text className="stepper-num">{count}</Text>
-      <View className="stepper-btn" onClick={handlePlus}>+</View>
+      <View className="stepper-btn" onClick={handlePlus}>
+        +
+      </View>
     </View>
   }
-/>
+/>;
 ```
 
 ### 自定义点击事件
@@ -95,6 +91,7 @@ import RecipeCard from '../../components/RecipeCard/index';
 ## 样式
 
 组件已包含完整的样式，包括：
+
 - 卡片阴影和圆角
 - 响应式图片
 - 标签样式（菜系、口味、场景）
@@ -106,6 +103,7 @@ import RecipeCard from '../../components/RecipeCard/index';
 ## 布局差异
 
 ### Grid 布局特点
+
 - 2列网格展示
 - 图片高度 240rpx（正方形）
 - 显示分类标签
@@ -114,6 +112,7 @@ import RecipeCard from '../../components/RecipeCard/index';
 - 适合快速浏览
 
 ### List 布局特点
+
 - 横向排列
 - 图片 160x160rpx
 - 显示分类标签
@@ -148,6 +147,3 @@ import RecipeCard from '../../components/RecipeCard/index';
    - 菜系（cuisines）- 红色 `#FF6B6B`
    - 口味（flavors）- 青色 `#4ECDC4`
    - 场景（scenes）- 紫色 `#6C5CE7`
-
-
-
