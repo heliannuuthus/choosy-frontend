@@ -50,18 +50,28 @@ jobs:
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "desc=CI 自动构建 ${VERSION} @ $(date +%Y-%m-%d\ %H:%M)" >> $GITHUB_OUTPUT
 
+      - name: Update taroConfig version
+        run: |
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            pkg.taroConfig = pkg.taroConfig || {};
+            pkg.taroConfig.version = '${{ steps.version.outputs.version }}';
+            pkg.taroConfig.desc = '${{ steps.version.outputs.desc }}';
+            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));
+            console.log('Updated taroConfig:', pkg.taroConfig);
+          "
+
       - name: Build and upload (开发版)
         if: steps.version.outputs.is_release == 'false'
         env:
           TARO_APP_API_BASE_URL: ${{ vars.API_BASE_URL }}
           TARO_APP_WEAPP_APPID: ${{ secrets.WEAPP_APPID }}
-        run: |
-          pnpm build:weapp --upload --upload-version "${{ steps.version.outputs.version }}" --upload-desc "${{ steps.version.outputs.desc }}"
+        run: pnpm build:weapp --upload
 
       - name: Build and upload (体验版 - 待审核)
         if: steps.version.outputs.is_release == 'true'
         env:
           TARO_APP_API_BASE_URL: ${{ vars.API_BASE_URL }}
           TARO_APP_WEAPP_APPID: ${{ secrets.WEAPP_APPID }}
-        run: |
-          pnpm build:weapp --upload --upload-version "${{ steps.version.outputs.version }}" --upload-desc "${{ steps.version.outputs.desc }}"
+        run: pnpm build:weapp --upload

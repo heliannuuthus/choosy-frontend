@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "description": "烹饪项目",
+  "taroConfig": {
+    "version": "1.0.0",
+    "desc": "CI 自动构建"
+  },
   "templateInfo": {
     "name": "taro-ui",
     "typescript": true,
