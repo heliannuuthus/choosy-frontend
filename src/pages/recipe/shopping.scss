@@ -77,11 +77,13 @@
 @keyframes activePulse {
   0%,
   100% {
-    box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.04),
+    box-shadow:
+      0 4rpx 24rpx rgba(0, 0, 0, 0.04),
       inset 0 0 0 3rpx transparent;
   }
   50% {
-    box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.04),
+    box-shadow:
+      0 4rpx 24rpx rgba(0, 0, 0, 0.04),
       inset 0 0 0 3rpx rgba(232, 80, 58, 0.3);
   }
 }
@@ -327,7 +329,10 @@
   overflow: hidden;
   box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.04);
   animation: slideUp 0.4s ease forwards;
-  transition: opacity 0.4s ease, transform 0.4s ease, box-shadow 0.3s ease;
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s ease,
+    box-shadow 0.3s ease;
   position: relative;
 
   &:nth-child(1) {
