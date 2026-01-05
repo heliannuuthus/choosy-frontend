@@ -55,7 +55,8 @@ jobs:
         env:
           TARO_APP_API_BASE_URL: ${{ vars.API_BASE_URL }}
           TARO_APP_WEAPP_APPID: ${{ secrets.WEAPP_APPID }}
-        run: pnpm build:weapp --upload
+        run: |
+          pnpm build:weapp --upload --upload-version "${{ steps.version.outputs.version }}" --upload-desc "${{ steps.version.outputs.desc }}"
 
       - name: Build and upload (体验版 - 待审核)
         if: steps.version.outputs.is_release == 'true'
