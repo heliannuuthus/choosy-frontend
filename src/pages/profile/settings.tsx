@@ -175,7 +175,9 @@ const Settings = () => {
 
   // 获取性别显示文本
   const getGenderLabel = (gender?: 0 | 1 | 2) => {
-    return GENDER_OPTIONS.find(opt => opt.value === gender)?.label || '未设置';
+    return (
+      GENDER_OPTIONS.find(opt => opt.value === gender)?.label || '未设置'
+    );
   };
 
   if (loading) {
