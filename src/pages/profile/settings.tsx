@@ -138,10 +138,9 @@ const Settings = () => {
       } catch (err: any) {
         Taro.hideLoading();
         console.error('绑定手机号失败:', err);
-        const msg =
-          err?.message?.includes('已绑定')
-            ? '该手机号已绑定其他账号'
-            : '绑定失败，请重试';
+        const msg = err?.message?.includes('已绑定')
+          ? '该手机号已绑定其他账号'
+          : '绑定失败，请重试';
         Taro.showToast({ title: msg, icon: 'none' });
       }
     },
@@ -300,7 +299,10 @@ const Settings = () => {
               >
                 <Text>取消</Text>
               </View>
-              <View className="modal-btn confirm" onClick={handleConfirmNickname}>
+              <View
+                className="modal-btn confirm"
+                onClick={handleConfirmNickname}
+              >
                 <Text>确定</Text>
               </View>
             </View>
