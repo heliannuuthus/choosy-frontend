@@ -8,9 +8,19 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: production
+    # tag 推送时：提交审核（需要审批保护）
+    # main 分支推送时：预览版（不需要审批）
+    # 注意：需要在 GitHub 仓库设置中为 production environment 配置审批保护
+    # Settings -> Environments -> production -> Required reviewers
+    if: |
+      github.event_name == 'push' &&
+      (startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    environment:
+      name: production
+      # 如果需要 URL，可以在这里配置（可选）
+      # url: https://your-production-url.com
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -115,7 +125,7 @@ jobs:
           fi
         continue-on-error: true
 
-      # 打 tag 后：提交代码审核
+      # 打 tag 后：提交代码审核（需要审批保护）
       - name: Build and upload (微信小程序 - 提交审核)
         if: steps.version.outputs.is_release == 'true'
         env:
