@@ -1,5 +1,5 @@
 {
-  "miniprogramRoot": "dist/",
+  "miniprogramRoot": "dist/weapp/",
   "projectname": "择味",
   "description": "烹饪项目",
   "appid": "ttae6ed8d3300d352501",

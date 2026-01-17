@@ -23,7 +23,7 @@ interface TokenResponse {
   expires_in: number;
 }
 
-// 用户信息类型（匹配后端 /api/user/profile 返回）
+// 用户信息类型（匹配后端 /api/profile 返回）
 export interface UserInfo {
   openid: string; // 系统生成的唯一标识（对外 ID）
   nickname?: string;
@@ -37,7 +37,7 @@ interface TokenRequestParams {
   grant_type: 'authorization_code' | 'refresh_token';
   code?: string; // grant_type=authorization_code 时使用
   refresh_token?: string; // grant_type=refresh_token 时使用
-  idp?: string; // 身份提供方：wechat:mp, douyin:mp, alipay:mp
+  idp?: string; // 身份提供方：wechat:mp, tt:mp, alipay:mp
 }
 
 /**
@@ -189,23 +189,35 @@ export async function ensureValidToken(): Promise<string | null> {
 function getCurrentPlatformIdP(): string {
   // Taro.getEnv() 返回 'WEAPP' | 'SWAN' | 'ALIPAY' | 'TT' | 'QQ' | 'JD' | 'H5' | 'RN'
   const env = Taro.getEnv();
+
+  // 添加调试日志
+  console.log('[Auth] 当前环境:', env);
+
+  let idp: string;
   switch (env) {
     case Taro.ENV_TYPE.WEAPP:
-      return 'wechat:mp';
+      idp = 'wechat:mp';
+      break;
     case Taro.ENV_TYPE.TT:
-      return 'douyin:mp';
+      idp = 'tt:mp';
+      break;
     case Taro.ENV_TYPE.ALIPAY:
-      return 'alipay:mp';
+      idp = 'alipay:mp';
+      break;
     default:
-      // 默认使用微信
-      return 'wechat:mp';
+      // 默认使用微信（兼容旧代码或未知环境）
+      console.warn('[Auth] 未知环境，默认使用微信 idp:', env);
+      idp = 'wechat:mp';
   }
+
+  console.log('[Auth] 检测到的 idp:', idp);
+  return idp;
 }
 
 /**
  * 登录（自动检测平台）
  * 使用 OAuth2.1 风格的 /token 端点
- * code 格式：idp:actual_code，如 wechat:mp:xxx
+ * code 格式：idp:actual_code，如 wechat:mp:xxx, tt:mp:xxx, alipay:mp:xxx
  */
 export async function wxLogin(): Promise<TokenResponse> {
   // 获取 login code
@@ -218,6 +230,13 @@ export async function wxLogin(): Promise<TokenResponse> {
   const idp = getCurrentPlatformIdP();
   const combinedCode = `${idp}:${loginRes.code}`;
 
+  console.log(
+    '[Auth] 登录请求 - IDP:',
+    idp,
+    'Code 长度:',
+    loginRes.code.length
+  );
+
   const response = await requestToken({
     grant_type: 'authorization_code',
     code: combinedCode,
@@ -225,6 +244,8 @@ export async function wxLogin(): Promise<TokenResponse> {
 
   // 保存 tokens
   saveTokens(response);
+
+  console.log('[Auth] 登录成功');
 
   return response;
 }
@@ -265,7 +286,7 @@ export async function fetchProfile(): Promise<UserInfo | null> {
 
   // 请求 profile 接口
   try {
-    const profile = await request<UserInfo>('/api/user/profile');
+    const profile = await request<UserInfo>('/api/profile');
     saveUserInfo(profile);
     return profile;
   } catch (error) {
@@ -298,7 +319,7 @@ export async function updateProfile(data: {
   }
 
   try {
-    const profile = await request<UserInfo>('/api/user/profile', {
+    const profile = await request<UserInfo>('/api/profile', {
       method: 'PUT',
       body: JSON.stringify(data),
     });

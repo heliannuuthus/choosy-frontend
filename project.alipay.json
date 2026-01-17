@@ -1,46 +1,19 @@
 {
-  "miniprogramRoot": "./",
-  "projectname": "myApp",
-  "description": "烹饪项目",
-  "appid": "",
-  "setting": {
-    "urlCheck": true,
-    "es6": true,
-    "enhance": true,
-    "postcss": false,
-    "minified": false,
-    "newFeature": true,
-    "autoAudits": false,
-    "coverView": true,
-    "showShadowRootInWxmlPanel": false,
-    "scopeDataCheck": false,
-    "useCompilerModule": false,
-    "compileWorklet": false,
-    "uglifyFileName": false,
-    "uploadWithSourceMap": true,
-    "packNpmManually": false,
-    "packNpmRelationList": [],
-    "minifyWXSS": false,
-    "minifyWXML": false,
-    "localPlugins": false,
-    "disableUseStrict": false,
-    "useCompilerPlugins": false,
-    "condition": false,
-    "swc": false,
-    "disableSWC": true,
-    "babelSetting": {
-      "ignore": [],
-      "disablePlugins": [],
-      "outputPath": ""
-    }
-  },
-  "compileType": "miniprogram",
-  "simulatorType": "alipay",
-  "simulatorPluginLibVersion": {},
-  "condition": {},
-  "packOptions": {
-    "ignore": [],
-    "include": []
-  },
-  "editorSetting": {}
+  "format": 2,
+  "miniprogramRoot": "dist/alipay/",
+  "component2": true,
+  "axmlStrictCheck": false,
+  "enableHMR": true,
+  "enableNodeModuleBabelTransform": true,
+  "exclude": [
+    "src/**",
+    "node_modules/**",
+    "config/**",
+    "types/**",
+    "*.config.js",
+    "*.config.ts",
+    "tsconfig.json",
+    "babel.config.js",
+    "jest.config.ts"
+  ]
 }

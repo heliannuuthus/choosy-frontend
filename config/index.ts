@@ -52,7 +52,7 @@ export default defineConfig<'webpack5'>(async (merge, { command, mode }) => {
       828: 1.81 / 2,
     },
     sourceRoot: 'src',
-    outputRoot: 'dist',
+    outputRoot: `dist/${process.env.TARO_ENV}`,
     plugins: [['@tarojs/plugin-mini-ci', ciPluginConfig]],
     // defineConstants 用于定义编译时常量（非环境变量）
     // 环境变量通过 .env.* 文件配置，Taro 会自动注入到 process.env
